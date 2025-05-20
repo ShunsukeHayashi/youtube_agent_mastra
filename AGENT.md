@@ -161,3 +161,154 @@ npm run dev          # (= mastra dev)
 
 
 ===
+# YouTube AI Tool & Workflow — 要件定義書 v0.1
+
+<aside>
+💡 **本書の位置付け** – 本ドキュメントは、YouTube運営支援ツール（Mastraベース）MVP の *機能要件・非機能要件* を明文化し、開発・テスト・リリース判断の根拠とするものです。
+</aside>
+
+---
+
+## 1. 概要
+
+* **対象システム**: YouTube キーワード入力から台本生成・改善提案までを自動化する Mastra Workflow Suite。
+* **バージョン**: MVP (α→β→GA ロードマップ)
+* **参照ドキュメント**: 事業企画書 v0.3citeturn2file5 ／ Workflow Checklist v0.2（別紙）
+
+## 2. 用語集
+
+| 用語           | 定義                                      |
+| ------------ | --------------------------------------- |
+| *Agent*      | LLM + Tool 群をラップし、対話タスクを実行する Mastra クラス |
+| *Tool*       | 外部 API やローカル計算を型付きで提供する関数群              |
+| *Workflow*   | Step を連結した業務フロー。REST で呼び出し可             |
+| *Sidebar UI* | Google Sheets 上で動作する Add‑on UI          |
+
+## 3. 機能要件
+
+| ID    | カテゴリ      | 要件                                                                 | 優先度 |
+| ----- | --------- | ------------------------------------------------------------------ | --- |
+| FR‑01 | リサーチ      | キーワード入力で関連動画/チャンネル統計を60秒以内に取得し、スプレッドシートへ自動転記                       | ★★★ |
+| FR‑02 | 要約        | 動画URLを入力すると字幕を取得し、200字以内で要約を生成 (Claude 3 Sonnet)citeturn2file12 | ★★★ |
+| FR‑03 | 台本生成      | ペルソナ・企画要素を入力し、3000‑7000字の台本案を出力                                    | ★★★ |
+| FR‑04 | 改善提案      | Analyticsデータと比較し、CTR/View Gap を診断し改善アクションを提示citeturn2file9      | ★★☆ |
+| FR‑05 | UI統合      | 上記機能を Google Sheets Sidebar からワンクリックで実行                            | ★★☆ |
+| FR‑06 | データExport | 生成物 (CSV/JSON/Markdown) をワンクリックでダウンロード                             | ★★☆ |
+| FR‑07 | マルチ言語     | 字幕取得と要約を英語/日本語に対応 (GAスコープ)                                         | ★★☆ |
+| FR‑08 | アカウント管理   | OAuth 2.0 で複数 YouTube チャンネルを接続                                     | ★★☆ |
+
+## 4. 非機能要件
+
+| ID     | 区分     | 要件                                         | 指標               |
+| ------ | ------ | ------------------------------------------ | ---------------- |
+| NFR‑01 | 性能     | Sidebar ボタン押下〜結果反映が 5 秒以内 (β) / 3 秒以内 (GA) | R‑P95 <5s        |
+| NFR‑02 | 可用性    | 24/7 で 99.5% 以上 (SLA)                      | MTTR <1h         |
+| NFR‑03 | 拡張性    | 新 Tool/Agent を 1 日以内に追加可能なプラグイン構造          | Pull‑Req <50 LoC |
+| NFR‑04 | セキュリティ | APIキーを暗号化保管し、ユーザーデータをスプレッドシート外へ送信しない       | OWASP‑TOP10 無違反  |
+| NFR‑05 | 品質保証   | 単体テスト 80% 以上、E2E テスト週次実行                   | Jest >80% Cov    |
+| NFR‑06 | 国際化    | UI 文字列 i18n 対応 (ja/en)                     | 翻訳ファイル yaml      |
+
+## 5. ユースケース & シーケンス概要
+
+1. **UC‑01: キーワード調査**
+   1‑1 ユーザがキーワード入力 → 1‑2 Research Agent が youtubeResearch Tool を呼ぶ → 1‑3 結果をシートへ出力。
+2. **UC‑02: 台本生成**
+   2‑1 ユーザが企画行を選択 → 2‑2 ScriptWriter Agent が要約 + ペルソナ情報を取得 → 2‑3 台本を別シートに生成 → 2‑4 Slack へ共有。
+3. **UC‑03: CTR 改善診断**
+   3‑1 Analytics 取込 → 3‑2 Insights Agent がギャップ計算 → 3‑3 提案をコメント列に追加。
+
+> 詳細シーケンス図と API仕様は Appendix A で随時更新。
+
+## 6. データ要件
+
+* **Sheet: research\_videos** – A\:I に動画統計。主キー `video_id`。
+* **Sheet: scripts** – 台本テキスト列 `script_md`。
+* **Sheet: analytics** – 動画指標 (CTR, Views, WatchTime)。
+
+## 7. 制約条件
+
+* GAS 実行時間 6 分制限以内に各 Step 完結。
+* YouTube Data API 日次クオータ 10,000 unit 以内。
+
+## 8. 受け入れ基準 (DoD)
+
+| チェック項目                                          |
+| ----------------------------------------------- |
+| 主要 FR を e2e テストがパスすること                          |
+| README にセットアップ手順を記載し、実機動作が再現できること               |
+| サンプル Workflow `scriptPipeline` が dev サーバで動作すること |
+| ログ & エラー追跡が Slack 通知されること                       |
+
+## 9. アウトオブスコープ
+
+* 編集用プレビュー動画自動生成 (Phase 2 で検討)
+* TikTok / Reels 連携
+
+## 10. 変更履歴
+
+| Ver | 日付         | 変更概要 | 作成者          |
+| --- | ---------- | ---- | ------------ |
+| 0.1 | 2025‑05‑21 | 初版作成 | ChatGPT (o3) |
+
+---
+
+次版で**API スキーマ詳細**と**ER 図**を追加予定です。ご要望・修正はコメントでお知らせください！
+
+---
+
+## 8. API 化方針（NEW）
+
+**目的**: すべての Tool / Agent / Workflow を外部システムから呼び出せる HTTP API として公開し、SaaS 連携・自動化スクリプト・他言語フロントエンドからの利用を可能にする。
+
+### 8.1 エンドポイント構成
+
+| 区分            | メソッド | パス                                | 説明                                                                |
+| ------------- | ---- | --------------------------------- | ----------------------------------------------------------------- |
+| **Tools**     | POST | `/api/tools/<toolId>/run`         | 入力スキーマを JSON で受け取り、Tool `execute()` の結果を返却。                       |
+| **Agents**    | POST | `/api/agents/<agentId>/chat`      | `messages[]` & `tool_calls[]` を受け取り、LLM 応答（ストリーミング可）。             |
+| **Workflows** | POST | `/api/workflows/<workflowId>/run` | `triggerSchema` に準拠した JSON を受け取り、Step 進行状況をストリーミング／WebSocket で返却。 |
+| **Schema**    | GET  | `/api/schema/openapi.yaml`        | 自動生成した OpenAPI 3.1 定義。                                            |
+
+### 8.2 実装手順
+
+1. **Mastra HTTP Adapter** を有効化
+
+   ```ts
+   import { withHttp } from "@mastra/server/http";
+   import { allTools } from "./mastra/tools";
+   import { allAgents } from "./mastra/agents";
+   import { allWorkflows } from "./mastra/workflows";
+
+   export default withHttp({
+     tools: allTools,
+     agents: allAgents,
+     workflows: allWorkflows
+   });
+   ```
+2. **OpenAPI 自動生成** – `mastra build --openapi` で `/dist/openapi.yaml` を生成。
+3. **認証** – OAuth2 + Personal Access Token。 `Authorization: Bearer <token>` 必須。
+4. **レート制限** – 1 分 60 リクエスト／IP（env で調整）。
+5. **デプロイ** – Vercel Serverless Functions or Cloudflare Workers。
+6. **テスト** – Postman Collection 生成＆ CI で contract テスト。
+
+### 8.3 機能要件追加
+
+| ID        | 要件                                               | 優先度 |
+| --------- | ------------------------------------------------ | --- |
+| **FR-13** | すべての Tool / Agent / Workflow を REST API で実行できること | ★★★ |
+| **FR-14** | OpenAPI 3.1 を自動生成し、Swagger UI で閲覧可能              | ★★☆ |
+
+### 8.4 非機能要件追加
+
+| ID         | 要件                      | 目標値                |
+| ---------- | ----------------------- | ------------------ |
+| **NFR-8**  | Tool 実行 API の P95 レイテンシ | ≤ 800 ms           |
+| **NFR-9**  | 同時接続                    | 1,000 rps をハンドル    |
+| **NFR-10** | API バージョニング             | `/v{n}/` prefix 方式 |
+
+### 8.5 リスク & 対策
+
+* **LLM コスト高騰** → キャッシュ／バッチ化／呼び出し回数制限。
+* **権限の過剰付与** → RBAC で Tool 単位のスコープを設定。
+
+> ✏️ **追記・修正歓迎** : さらに細かいエンドポイント仕様や CI/CD 手順を明文化したい場合はご指示ください。
