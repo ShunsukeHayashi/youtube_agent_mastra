@@ -1,0 +1,824 @@
+# YouTube Agent Mastra ワークフロープロンプト
+# Version: 1.0
+# Date: {{execution_date_jst}}
+# Project: YouTube Agent Mastra
+# AI Assistant: Claude-3-7-Sonnet-20250219
+
+# このファイルは、YouTube Agent Mastraプロジェクトで使用される各ワークフローのプロンプトを定義します。
+# 各ワークフローは特定のタスクを実行するためのステップとエージェントの組み合わせです。
+
+# MCP (Model Context Protocol) サーバー設定
+mcp_server:
+  name: youtube-agent-mastra
+  version: 1.0.0
+  description: YouTube Agent Mastraのワークフローを提供するMCPサーバー
+  host: localhost
+  port: 3000
+  base_path: /api/mcp
+  auth:
+    type: bearer
+    token_env: MCP_AUTH_TOKEN
+
+# MCP リソース定義
+mcp_resources:
+  - name: youtube_search
+    uri: youtube://search
+    description: YouTube検索結果を提供するリソース
+  - name: youtube_analytics
+    uri: youtube://analytics
+    description: YouTube分析データを提供するリソース
+  - name: keyword_research
+    uri: youtube://keywords
+    description: キーワードリサーチ結果を提供するリソース
+  - name: mastra_blog
+    uri: mastra://blog
+    description: Mastra.aiのブログコンテンツを提供するリソース
+  - name: mastra_docs
+    uri: mastra://docs
+    description: Mastra.aiのドキュメントを提供するリソース
+  - name: mastra_examples
+    uri: mastra://examples
+    description: Mastra.aiの例を提供するリソース
+  - name: mastra_changes
+    uri: mastra://changes
+    description: Mastra.aiパッケージの変更ログ情報を提供するリソース
+
+# MCP ツール定義
+mcp_tools:
+  - name: youtube_search_tool
+    description: YouTubeで動画を検索するツール
+    input_schema:
+      query:
+        type: string
+        description: 検索クエリ
+        required: true
+      maxResults:
+        type: number
+        description: 取得する結果の最大数
+        default: 10
+        required: false
+      type:
+        type: string
+        description: 検索タイプ（video, channel, playlist）
+        default: video
+        required: false
+    output_schema:
+      results:
+        type: array
+        description: 検索結果
+      totalResults:
+        type: number
+        description: 検索結果の総数
+  - name: keyword_research_tool
+    description: YouTubeキーワードリサーチを行うツール
+    input_schema:
+      keyword:
+        type: string
+        description: リサーチするキーワード
+        required: true
+      location:
+        type: string
+        description: 地域（例：jp, us）
+        default: jp
+        required: false
+      language:
+        type: string
+        description: 言語（例：ja, en）
+        default: ja
+        required: false
+    output_schema:
+      keywords:
+        type: array
+        description: キーワード候補リスト
+      relatedTopics:
+        type: array
+        description: 関連トピックリスト
+      recommendations:
+        type: string
+        description: キーワード戦略の推奨事項
+  - name: mastraBlog
+    description: Mastra.aiブログコンテンツを取得するツール。URLなしの場合は全ブログ記事のリストを返し、URLありの場合は特定のブログ記事のコンテンツをマークダウン形式で返します。ブログには変更ログ記事だけでなく、Mastraの機能やAIニュースに関する発表や記事も含まれています。
+    input_schema:
+      url:
+        type: string
+        description: 取得する特定のブログ記事のURL。文字列「/blog」がURLとして渡された場合、すべてのブログ記事のリストを返します。
+        required: true
+    output_schema:
+      content:
+        type: string
+        description: ブログコンテンツまたはブログ記事リスト
+  - name: mastraDocs
+    description: Mastra.aiドキュメントを取得するツール。ドキュメントを探索するためのパスをリクエストします。リファレンスにはAPIドキュメントが含まれ、その他のパスにはガイドが含まれています。MCPに関するドキュメントは現在、reference/tools/にあります。
+    input_schema:
+      paths:
+        type: array
+        items:
+          type: string
+        description: |
+          取得する1つ以上のドキュメントパス
+          利用可能なパス：
+          利用可能なトップレベルパス：
+          ディレクトリ：
+          - agents/
+          - community/
+          - deployment/
+          - evals/
+          - frameworks/
+          - getting-started/
+          - local-dev/
+          - mastra-cloud/
+          - memory/
+          - observability/
+          - rag/
+          - reference/
+          - storage/
+          - tools-mcp/
+          - voice/
+          - workflows-vnext/
+          - workflows/
+          リファレンスサブディレクトリ：
+          - reference/agents/
+          - reference/cli/
+          - reference/client-js/
+          - reference/core/
+          - reference/deployer/
+          - reference/evals/
+          - reference/memory/
+          - reference/networks/
+          - reference/observability/
+          - reference/rag/
+          - reference/storage/
+          - reference/tools/
+          - reference/vNextWorkflows/
+          - reference/voice/
+          - reference/workflows/
+          ファイル：
+          - index.mdx
+        required: true
+    output_schema:
+      docs:
+        type: object
+        description: リクエストされたパスのドキュメント
+  - name: mastraExamples
+    description: Mastra.ai例ディレクトリからコード例を取得するツール。特定の例の名前がない場合は、利用可能なすべての例をリストし、例の名前がある場合は、その例の完全なソースコードを返します。
+    input_schema:
+      example:
+        type: string
+        description: |
+          取得する特定の例の名前。提供されていない場合は、利用可能なすべての例をリストします。
+          利用可能な例：a2a, agent, agent-network, agui, ai-sdk-useChat, assistant-ui, bird-checker-with-express, bird-checker-with-nextjs, bird-checker-with-nextjs-and-eval, client-side-tools, crypto-chatbot, experimental-auth-weather-agent, fireworks-r1, mcp-configuration, mcp-registry-registry, memory-todo-agent, memory-with-context, memory-with-libsql, memory-with-mem0, memory-with-pg, memory-with-processors, memory-with-upstash, openapi-spec-writer, quick-start, stock-price-tool, weather-agent, workflow-ai-recruiter, workflow-with-inline-steps, workflow-with-memory, workflow-with-separate-steps
+        required: false
+    output_schema:
+      examples:
+        type: object
+        description: 例のリストまたは特定の例のソースコード
+  - name: mastraChanges
+    description: |
+      Mastra.aiパッケージの変更ログ情報を取得するツール。
+      利用可能なパッケージ：@internal/storage-test-utils, @mastra/agui, @mastra/astra, @mastra/chroma, @mastra/clickhouse, @mastra/client-js, @mastra/cloud, @mastra/cloudflare, @mastra/cloudflare-d1, @mastra/core, @mastra/couchbase, @mastra/deployer, @mastra/deployer-cloudflare, @mastra/deployer-netlify, @mastra/deployer-vercel, @mastra/dynamodb, @mastra/evals, @mastra/fastembed, @mastra/firecrawl, @mastra/github, @mastra/libsql, @mastra/loggers, @mastra/mcp, @mastra/mcp-docs-server, @mastra/mcp-registry-registry, @mastra/mem0, @mastra/memory, @mastra/mongodb, @mastra/opensearch, @mastra/pg, @mastra/pinecone, @mastra/playground-ui, @mastra/qdrant, @mastra/rag, @mastra/ragie, @mastra/server, @mastra/turbopuffer, @mastra/upstash, @mastra/vectorize, @mastra/voice-azure, @mastra/voice-cloudflare, @mastra/voice-deepgram, @mastra/voice-elevenlabs, @mastra/voice-google, @mastra/voice-murf, @mastra/voice-openai, @mastra/voice-openai-realtime, @mastra/voice-playai, @mastra/voice-sarvam, @mastra/voice-speechify, create-mastra, mastra
+    input_schema:
+      package:
+        type: string
+        description: 変更ログを取得する特定のパッケージの名前。提供されていない場合は、利用可能なすべてのパッケージをリストします。
+        required: false
+    output_schema:
+      changes:
+        type: object
+        description: パッケージの変更ログ情報
+
+# 1. キーワードリサーチワークフロー
+workflow:
+  name: keyword-research-workflow
+  description: YouTubeでのキーワードリサーチを行い、検索ボリュームと競合性を分析します
+  input_schema:
+    topic:
+      type: string
+      description: リサーチするトピック
+      required: true
+    maxResults:
+      type: number
+      description: 取得する結果の最大数
+      default: 10
+      required: false
+    includeCompetition:
+      type: boolean
+      description: 競合性分析を含めるか
+      default: true
+      required: false
+  steps:
+    - id: research-keywords
+      description: Keyword Tool APIを使用して検索ボリュームと関連キーワードを取得
+      tool: keywordResearchTool
+      agent: keywordResearchAgent
+      input:
+        keyword: ${input.topic}
+        location: jp
+        language: ja
+        limit: ${input.maxResults || 20}
+        includeRelated: true
+        source: youtube
+    - id: present-keyword-strategy
+      description: キーワードリサーチの結果を構造化された形式で提示
+      agent: keywordResearchAgent
+      input:
+        research_results: ${steps.research-keywords.output}
+  prompt: |
+    以下のキーワードリサーチ結果をもとに、YouTube動画のSEO最適化のための戦略的なキーワード提案を行ってください：
+    ${JSON.stringify(research_results, null, 2)}
+    
+    注意: このデータは${research_results.metadata.apiKeyUsed ? '実際のAPI' : 'モックデータ'}を使用して${new Date(research_results.metadata.timestamp).toLocaleString('ja-JP')}に生成されました。
+
+# 2. チャンネルコンセプトワークフロー
+workflow:
+  name: channel-concept-workflow
+  description: ターゲットオーディエンスとキーワード分析に基づいたYouTubeチャンネルのコンセプトを提案します
+  input_schema:
+    productDescription:
+      type: string
+      description: 製品・サービスの説明
+      required: true
+    targetAudience:
+      type: string
+      description: ターゲットオーディエンスの説明
+      required: false
+    businessGoals:
+      type: string
+      description: ビジネス目標
+      required: false
+    industryCategory:
+      type: string
+      description: 業界カテゴリ
+      required: false
+    websiteUrl:
+      type: string
+      description: ウェブサイトURL
+      required: false
+  steps:
+    - id: channel-concept-generation
+      description: チャンネルコンセプトの生成
+      tool: youtubeChannelConceptTool
+      agent: channelConceptAgent
+      input:
+        productDescription: ${input.productDescription}
+        targetAudience: ${input.targetAudience}
+        businessGoals: ${input.businessGoals}
+        industryCategory: ${input.industryCategory}
+        websiteUrl: ${input.websiteUrl}
+  prompt: |
+    #TASK_EXECUTION[TYPE=YouTubeチャンネル設計支援]
+
+    ## INTENT_UNDERSTANDING
+    @TASK_ANALYSIS: [
+    EXPLICIT_REQUEST: "YouTubeチャンネルのコンセプト設計を行いたい",
+    IMPLICIT_NEEDS: "販売商品と関連性のあるSEOキーワード調査、ペルソナ設計、コンセプトの明文化",
+    SUCCESS_CRITERIA: "検索需要のあるキーワードに基づいた、的確で魅力的なチャンネルコンセプト案の生成"
+    ]
+    @CONTEXT_MAPPING: [
+    DOMAIN_KNOWLEDGE: "YouTube SEO、マーケティング戦略、コンテンツ企画",
+    USER_PERSPECTIVE: "販売商品の認知向上と売上増加につながるチャンネル設計を目指す",
+    USAGE_SCENARIO: "マーケティング施策としてYouTubeチャンネルを立ち上げ、視聴者を顧客化する"
+    ]
+
+    ## EXECUTION_STRATEGY
+    @APPROACH_DESIGN: [
+    METHODOLOGY: "段階的な絞り込みと戦略設計によって、データと仮説に基づいたコンセプト立案を行う",
+    PROCESS_STEPS: "
+    Step1: ユーザー入力から販売商品情報を収集する
+    Step2: 商品と関連性があり、検索ボリュームが高いYouTube SEOキーワードを抽出し、ボリューム順にランキング
+    Step3: 上位キーワードに対して、それぞれユーザーペルソナ像を抽出
+    Step4: ペルソナから最も相関性の高いペルソナを選定
+    Step5: ペルソナが達成したい未来像（ゴールイメージ）を作成
+    Step6: ゴールイメージとTOPキーワードに基づいて、チャンネルコンセプト案を生成
+    "
+    ]
+
+# 3. 動画企画ワークフロー
+workflow:
+  name: video-planning-workflow
+  description: SEO最適化された動画コンテンツの企画を提案します
+  input_schema:
+    topic:
+      type: string
+      description: 動画のトピック
+      required: true
+    targetKeywords:
+      type: array
+      items:
+        type: string
+      description: ターゲットキーワード
+      required: false
+    contentType:
+      type: string
+      description: コンテンツタイプ（チュートリアル、解説、レビューなど）
+      required: false
+    duration:
+      type: string
+      description: 想定動画時間（短尺、中尺、長尺）
+      required: false
+    channelConcept:
+      type: string
+      description: チャンネルコンセプト
+      required: false
+  steps:
+    - id: video-planning
+      description: 動画企画の生成
+      tool: youtubeVideoPlanningTool
+      agent: youtubeVideoPlanningAgent
+      input:
+        topic: ${input.topic}
+        targetKeywords: ${input.targetKeywords}
+        contentType: ${input.contentType}
+        duration: ${input.duration}
+        channelConcept: ${input.channelConcept}
+  prompt: |
+    以下の情報に基づいて、SEO最適化された動画企画を作成してください：
+    
+    トピック: ${input.topic}
+    ターゲットキーワード: ${input.targetKeywords ? input.targetKeywords.join(', ') : '指定なし'}
+    コンテンツタイプ: ${input.contentType || '指定なし'}
+    想定動画時間: ${input.duration || '指定なし'}
+    チャンネルコンセプト: ${input.channelConcept || '指定なし'}
+    
+    以下の要素を含む企画を提案してください：
+    1. 魅力的なタイトル案（SEO最適化）
+    2. 動画の概要と説明文
+    3. 動画の構成（セクション別の内容と時間配分）
+    4. 視聴者の注目を集めるポイント
+    5. コール・トゥ・アクション
+    6. SEO最適化のためのタグとキーワード配置
+
+# 4. タイトル生成ワークフロー
+workflow:
+  name: title-generator-workflow
+  description: 高CTRを実現するYouTube動画タイトルを生成します
+  input_schema:
+    videoContent:
+      type: string
+      description: 動画のコンテンツ/トランスクリプト
+      required: true
+    seoKeywords:
+      type: array
+      items:
+        type: string
+      description: タイトルに含めるSEOキーワード
+      required: false
+    targetAudience:
+      type: string
+      description: ターゲットオーディエンスの説明
+      required: false
+    videoCategory:
+      type: string
+      description: 動画のカテゴリ（チュートリアル、レビュー、エンターテイメントなど）
+      required: false
+    channelTheme:
+      type: string
+      description: YouTubeチャンネルの全体的なテーマやフォーカス
+      required: false
+  steps:
+    - id: generate-titles-thumbnails
+      description: 動画コンテンツに基づいてYouTubeタイトルとサムネイルテキストを生成
+      tool: youtubeTitleGeneratorTool
+      agent: titleGeneratorAgent
+      input:
+        videoContent: ${input.videoContent}
+        seoKeywords: ${input.seoKeywords}
+        targetAudience: ${input.targetAudience}
+        videoCategory: ${input.videoCategory}
+        channelTheme: ${input.channelTheme}
+    - id: present-marketing-strategy
+      description: タイトルとサムネイル生成結果を元に戦略的なマーケティングプランを提示
+      agent: titleGeneratorAgent
+      input:
+        generation_results: ${steps.generate-titles-thumbnails.output}
+  prompt: |
+    Based on the following YouTube title and thumbnail generation results, present a strategic marketing plan:
+    ${JSON.stringify(generation_results, null, 2)}
+
+# 5. サムネイル・タイトル生成ワークフロー
+workflow:
+  name: thumbnail-title-generator-workflow
+  description: 高CTRを実現するYouTube動画のタイトルとサムネイルのコンセプトを生成します
+  input_schema:
+    topic:
+      type: string
+      description: 動画のトピック
+      required: true
+    targetKeywords:
+      type: array
+      items:
+        type: string
+      description: ターゲットキーワード
+      required: false
+    contentType:
+      type: string
+      description: コンテンツタイプ
+      required: false
+    channelStyle:
+      type: string
+      description: チャンネルのスタイル・トーン
+      required: false
+    competitorUrls:
+      type: array
+      items:
+        type: string
+      description: 競合動画のURL
+      required: false
+  steps:
+    - id: generate-thumbnail-title
+      description: タイトルとサムネイルコンセプトの生成
+      tool: youtubeThumbnailTitleGeneratorTool
+      agent: youtubeThumbnailTitleGeneratorAgent
+      input:
+        topic: ${input.topic}
+        targetKeywords: ${input.targetKeywords}
+        contentType: ${input.contentType}
+        channelStyle: ${input.channelStyle}
+        competitorUrls: ${input.competitorUrls}
+  prompt: |
+    以下の情報に基づいて、高CTRを実現するYouTube動画のタイトルとサムネイルコンセプトを生成してください：
+    
+    トピック: ${input.topic}
+    ターゲットキーワード: ${input.targetKeywords ? input.targetKeywords.join(', ') : '指定なし'}
+    コンテンツタイプ: ${input.contentType || '指定なし'}
+    チャンネルスタイル: ${input.channelStyle || '指定なし'}
+    
+    以下の要素を含む提案をしてください：
+    1. 複数のタイトル案（CTR予測付き）
+    2. サムネイルのビジュアルコンセプト（要素、構図、色使い）
+    3. タイトルとサムネイルの組み合わせ推奨
+    4. CTR向上のためのポイント
+
+# 6. 分析ワークフロー（チャンネル分析）
+workflow:
+  name: channel-analytics-workflow
+  description: YouTubeチャンネルのパフォーマンスを分析します
+  input_schema:
+    channelId:
+      type: string
+      description: チャンネルID
+      required: true
+    startDate:
+      type: string
+      description: 開始日（YYYY-MM-DD形式）
+      required: false
+    endDate:
+      type: string
+      description: 終了日（YYYY-MM-DD形式）
+      required: false
+    metrics:
+      type: array
+      items:
+        type: string
+      description: 取得するメトリクス
+      required: false
+    dimensions:
+      type: string
+      description: 分析の次元（日、週、月など）
+      required: false
+  steps:
+    - id: channel-analytics
+      description: チャンネル分析データの取得
+      tool: getChannelAnalytics
+      agent: youtubeAnalyticsAgent
+      input:
+        channelId: ${input.channelId}
+        startDate: ${input.startDate}
+        endDate: ${input.endDate}
+        metrics: ${input.metrics}
+        dimensions: ${input.dimensions}
+  prompt: |
+    以下のYouTubeチャンネル分析データを分析し、インサイトと改善提案を提供してください：
+    ${JSON.stringify(steps.channel-analytics.output, null, 2)}
+    
+    以下の観点から分析してください：
+    1. 全体的なパフォーマンス傾向
+    2. 強みと弱み
+    3. 視聴者エンゲージメント
+    4. 成長機会
+    5. 具体的な改善アクション
+
+# 7. 分析ワークフロー（動画分析）
+workflow:
+  name: video-analytics-workflow
+  description: YouTube動画のパフォーマンスを分析します
+  input_schema:
+    channelId:
+      type: string
+      description: チャンネルID
+      required: true
+    videoId:
+      type: string
+      description: 動画ID
+      required: true
+    startDate:
+      type: string
+      description: 開始日
+      required: false
+    endDate:
+      type: string
+      description: 終了日
+      required: false
+    metrics:
+      type: array
+      items:
+        type: string
+      description: 取得するメトリクス
+      required: false
+  steps:
+    - id: video-analytics
+      description: 動画分析データの取得
+      tool: getVideoAnalytics
+      agent: youtubeAnalyticsAgent
+      input:
+        channelId: ${input.channelId}
+        videoId: ${input.videoId}
+        startDate: ${input.startDate}
+        endDate: ${input.endDate}
+        metrics: ${input.metrics}
+  prompt: |
+    以下のYouTube動画分析データを分析し、インサイトと改善提案を提供してください：
+    ${JSON.stringify(steps.video-analytics.output, null, 2)}
+    
+    以下の観点から分析してください：
+    1. 視聴者維持率と離脱ポイント
+    2. エンゲージメント指標（いいね、コメント、共有）
+    3. トラフィックソース分析
+    4. オーディエンス特性
+    5. 次回動画への改善ポイント
+
+# 8. 入力収集ワークフロー
+workflow:
+  name: input-collection-workflow
+  description: ユーザーから必要な情報を対話形式で収集します
+  input_schema:
+    workflowType:
+      type: string
+      description: 実行するワークフローのタイプ
+      required: true
+    initialData:
+      type: object
+      description: 初期データ
+      required: false
+  steps:
+    - id: collect-input
+      description: ユーザー入力の収集
+      tool: youtubeInputCollectionTool
+      agent: inputCollectionAgent
+      input:
+        workflowType: ${input.workflowType}
+        initialData: ${input.initialData}
+  prompt: |
+    ${input.workflowType}ワークフローの実行に必要な情報を収集します。
+    
+    以下の情報が必要です：
+    ${getRequiredFields(input.workflowType)}
+    
+    既に提供されている情報：
+    ${JSON.stringify(input.initialData || {}, null, 2)}
+    
+    不足している情報を対話形式で収集してください。
+
+# 9. YouTubeキーワード戦略シミュレーション
+workflow:
+  name: youtube-keyword-strategy-simulation
+  description: YouTube運用最適化のためのキーワード戦略をシミュレーションします
+  input_schema:
+    businessUrl:
+      type: string
+      description: 企業のHP/サービスLPのURL
+      required: false
+    targetAudience:
+      type: string
+      description: ターゲット顧客の詳細情報
+      required: false
+    youtubeGoals:
+      type: string
+      description: YouTube運用の目的（例：集客、認知拡大、ファン化）
+      required: true
+    ngKeywords:
+      type: array
+      items:
+        type: string
+      description: NGキーワード・トピック
+      required: false
+    preferredTopics:
+      type: array
+      items:
+        type: string
+      description: 特に発信したいテーマやトピック
+      required: false
+  steps:
+    - id: keyword-collection
+      description: キーワード候補の収集
+      tool: keywordResearchTool
+      agent: keywordResearchAgent
+      input:
+        businessUrl: ${input.businessUrl}
+        targetAudience: ${input.targetAudience}
+        youtubeGoals: ${input.youtubeGoals}
+        preferredTopics: ${input.preferredTopics}
+    - id: keyword-evaluation
+      description: キーワード評価
+      agent: keywordResearchAgent
+      input:
+        keywords: ${steps.keyword-collection.output}
+        ngKeywords: ${input.ngKeywords}
+        youtubeGoals: ${input.youtubeGoals}
+    - id: keyword-recommendation
+      description: キーワード推奨
+      agent: keywordResearchAgent
+      input:
+        evaluatedKeywords: ${steps.keyword-evaluation.output}
+  prompt: |
+    F(Achieve goal for Thinking [Agent](LLM, R and R, Tools, abilities) work backwards, Using step-back question)=A to Z=∫F(step)=Result
+
+    ◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢
+
+    [Jinja2 Playbook Template]
+
+    ## 概要
+    このプロンプトは、YouTube運用最適化ツールのワークフローをGPT上でシミュレーションするためのものです。
+    ユーザーから提供された情報とWeb検索を通じて得たデータを基に、AIがキーワードを多角的に評価し、推奨度とともにリスト形式で提示するプロセスを再現します。
+
+    [Procedure]
+    1. 初期情報入力
+    ユーザーは、分析対象となる企業のHP/サービスLPのURL、ターゲット顧客の詳細情報、YouTube運用の目的（例：「集客のために認知拡大をしファン化をさせる」）、NGキーワード・トピック、任意で特に発信したいテーマやトピック（強みなど）を入力します。
+
+    2. キーワード候補収集（Web検索）
+    入力された情報（特に企業情報、発信テーマ）に基づき、Web検索機能を活用して関連性の高いキーワード候補を収集します。同時に、可能であれば各キーワードの月間平均検索ボリュームに関する情報やトレンドデータもWeb検索を通じて調査・取得します。（注：実際のAPI連携とは異なり、Web検索による推定情報となります）
+
+    3. キーワード評価
+    収集したキーワード候補を、以下の5つの観点から評価・スコアリングします。
+        1. 検索ボリュームとその特性（足切り、特性タグ付けに使用）
+        2. キーワードの関連性（対事業・対顧客）
+        3. キーワードの重要度/ビジネス価値
+        4. 競合性/実現可能性（YouTube上の競合状況をWeb検索で調査）
+        5. トレンド・成長性（Web検索でトレンド情報を調査）
+
+    4. 総合推奨スコア算出
+    キーワード評価に基づき、以下の重み付けで総合推奨スコアを算出します。
+        - キーワードの関連性スコア: 40%
+        - キーワードの重要度/ビジネス価値スコア: 40%
+        - 競合性/実現可能性スコア（10段階評価の元スコアを「10 - 元スコア」として換算）: 10%
+        - トレンド・成長性スコア: 10%
+    検索ボリュームは足切り条件として使用し、関連性スコアが低いものも足切り対象とします。
+
+    5. キーワード提案リスト生成と表示
+    総合推奨スコア順にキーワードリストを生成し表示します。各キーワードには、スコア、推定検索ボリューム、各種特性タグ（例：認知拡大向き、ファン化向き）、推定競合レベル、推定トレンド状況などを付与します。可能であれば、ソート機能やフィルタリング機能の概念を説明に含めます。
+
+# 10. YouTube検索ワークフロー
+workflow:
+  name: youtube-search-workflow
+  description: YouTubeで動画を検索し、結果をキュレーションします
+  input_schema:
+    query:
+      type: string
+      description: 検索クエリ
+      required: true
+    maxResults:
+      type: number
+      description: 取得する結果の最大数
+      default: 10
+      required: false
+  steps:
+    - id: video-search
+      description: YouTubeで動画を検索
+      tool: youtubeSearchTool
+      agent: contentCuratorAgent
+      input:
+        query: ${input.query}
+        maxResults: ${input.maxResults || 10}
+        type: video
+    - id: curate-suggestions
+      description: 検索結果から動画を選別し、推薦
+      agent: contentCuratorAgent
+      input:
+        search_results: ${steps.video-search.output}
+  prompt: |
+    Based on the following YouTube search results, provide curated recommendations:
+    ${JSON.stringify(search_results, null, 2)}
+
+# MCP サーバー使用方法
+# このYAMLファイルは、Mastra MCPサーバーで使用するためのワークフロー定義です。
+# 以下の手順でMCPサーバーを起動し、ワークフローを実行できます。
+
+# 1. MCPサーバーのインストールと起動
+# ```bash
+# # Mastra MCPサーバーのインストール
+# npm install -g @mastra/mcp-server
+# 
+# # MCPサーバーの起動
+# npx mastra-mcp-server --config .roo/youtube_workflow_prompt.yml
+# ```
+
+# 2. MCPクライアントからの接続
+# ```typescript
+# import { MCPClient } from '@mastra/mcp-client';
+# 
+# // MCPクライアントの初期化
+# const client = new MCPClient({
+#   serverUrl: 'http://localhost:3000/api/mcp',
+#   authToken: process.env.MCP_AUTH_TOKEN
+# });
+# 
+# // ワークフローの実行
+# const result = await client.executeWorkflow('keyword-research-workflow', {
+#   topic: 'プログラミング学習',
+#   maxResults: 20,
+#   includeCompetition: true
+# });
+# 
+# console.log(result);
+# ```
+
+# 3. RESTful APIを使用した接続
+# MCPサーバーはRESTful APIも提供しています。以下のようにHTTPリクエストを送信してワークフローを実行できます。
+# 
+# ```bash
+# curl -X POST http://localhost:3000/api/mcp/workflows/keyword-research-workflow \
+#   -H "Content-Type: application/json" \
+#   -H "Authorization: Bearer $MCP_AUTH_TOKEN" \
+#   -d '{
+#     "topic": "プログラミング学習",
+#     "maxResults": 20,
+#     "includeCompetition": true
+#   }'
+# ```
+
+# 4. MCPリソースへのアクセス
+# MCPサーバーが提供するリソースにアクセスするには、以下のようにします。
+# 
+# ```typescript
+# // MCPリソースへのアクセス
+# const searchResults = await client.accessResource('youtube://search', {
+#   query: 'プログラミング学習',
+#   maxResults: 10
+# });
+# 
+# console.log(searchResults);
+# ```
+
+# 5. MCPツールの使用
+# MCPサーバーが提供するツールを使用するには、以下のようにします。
+# 
+# ```typescript
+# // MCPツールの使用
+# const keywordResults = await client.useTool('keyword_research_tool', {
+#   keyword: 'プログラミング学習',
+#   location: 'jp',
+#   language: 'ja'
+# });
+# 
+# console.log(keywordResults);
+# ```
+
+# 6. Mastra.aiドキュメントツールの使用例
+# ```typescript
+# // Mastra.aiドキュメントの取得
+# const docs = await client.useTool('mastraDocs', {
+#   paths: ['reference/tools/', 'tools-mcp/']
+# });
+#
+# console.log(docs);
+# ```
+
+# 7. Mastra.aiブログツールの使用例
+# ```typescript
+# // Mastra.aiブログの取得
+# const blogList = await client.useTool('mastraBlog', {
+#   url: '/blog'
+# });
+#
+# // 特定のブログ記事の取得
+# const blogPost = await client.useTool('mastraBlog', {
+#   url: 'https://mastra.ai/blog/mcp-introduction'
+# });
+#
+# console.log(blogPost);
+# ```
+
+# 8. Mastra.ai例ツールの使用例
+# ```typescript
+# // 利用可能な例のリスト取得
+# const examplesList = await client.useTool('mastraExamples', {});
+#
+# // 特定の例の取得
+# const mcpExample = await client.useTool('mastraExamples', {
+#   example: 'mcp-configuration'
+# });
+#
+# console.log(mcpExample);
+# ```
+
+# 9. Mastra.ai変更ログツールの使用例
+# ```typescript
+# // 利用可能なパッケージのリスト取得
+# const packagesList = await client.useTool('mastraChanges', {});
+#
+# // 特定のパッケージの変更ログ取得
+# const mcpChanges = await client.useTool('mastraChanges', {
+#   package: '@mastra/mcp'
+# });
+#
+# console.log(mcpChanges);
+# ```
