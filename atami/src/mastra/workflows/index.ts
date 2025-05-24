@@ -7,6 +7,7 @@ import { z } from 'zod';
 
 // ------------------------------------------------------------------
 // 個別ワークフロー（既存）
+// 既存のワークフローのインポート
 // ------------------------------------------------------------------
 export { youtubeTitleGeneratorWorkflow } from './titleGeneratorWorkflow';
 export {
@@ -39,3 +40,28 @@ export { youtubeShortsIdeationWorkflow } from './shortsIdeationWorkflow';       
 export { youtubeShortsScriptWorkflow } from './shortsScriptWorkflow';
 export { workflowLongformOsaru } from './workflow-longform-osaru';
 export { workflowLongformMoezo } from './workflow-longform-moezo';
+
+const youtubeChannelPlannerWorkflow = createWorkflow({
+  id: 'youtube-channel-planner-workflow',
+  description: 'Plan a YouTube channel content strategy (Not implemented)',
+  inputSchema: z.object({
+    channelName: z.string().describe('Name of the YouTube channel'),
+    channelDescription: z.string().describe('Description of the YouTube channel'),
+    targetAudience: z.string().describe('Target audience of the YouTube channel'),
+    contentGoals: z.string().describe('Content goals of the YouTube channel'),
+  }),
+  outputSchema: z.object({
+    success: z.boolean(),
+    message: z.string(),
+    result: z.object({
+      contentPlan: z.string().optional(),
+      videoIdeas: z.array(z.string()).optional(),
+      schedule: z.string().optional(),
+    }).optional(),
+  }),
+});
+
+// ダミーワークフローをコミット
+youtubeChannelPlannerWorkflow.commit();
+
+export { youtubeChannelPlannerWorkflow };
