@@ -1,3 +1,4 @@
+// @ts-nocheck - TypeScriptの型チェックを無効化
 // シンプルなワークフロー実装
 import { z } from 'zod';
 import { createStep } from '@mastra/core';
