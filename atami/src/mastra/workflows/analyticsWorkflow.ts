@@ -1,6 +1,7 @@
 import { anthropic } from '@ai-sdk/anthropic';
 import { Agent } from '@mastra/core/agent';
-import { createStep, Workflow } from '@mastra/core';
+import { createStep } from '@mastra/core';
+import { createWorkflow } from '@mastra/core/workflows';
 import { z } from 'zod';
 import { getChannelAnalytics, getVideoAnalytics, getAudienceGeographics } from '../tools/youtube-analytics';
 import { channelAnalyticsInputSchema, videoAnalyticsInputSchema } from '../types';
@@ -14,7 +15,7 @@ const llm = anthropic('claude-3-7-sonnet-20250219');
 const analyticsAgent = new Agent({
   name: 'YouTube Analytics Strategist',
   model: llm,
-  tools: { 
+  tools: {
     getChannelAnalytics,
     getVideoAnalytics,
     getAudienceGeographics
@@ -72,6 +73,7 @@ const fetchChannelAnalytics = createStep({
   id: 'fetch-channel-analytics',
   description: 'チャンネルの KPI データを取得',
   inputSchema: channelAnalyticsInputSchema,
+  outputSchema: z.any(),
   execute: async (params) => {
     // @ts-ignore - TypeScript型定義の問題を一時的に無視
     const context = params.context;
@@ -82,11 +84,11 @@ const fetchChannelAnalytics = createStep({
       metrics?: string[],
       dimensions?: string,
     }>('trigger');
-    
+
     if (!triggerData) {
       throw new Error('Trigger data not found');
     }
-    
+
     // @ts-ignore - TypeScript型定義の問題を一時的に無視
     return await getChannelAnalytics.execute({
       runtimeContext: params.runtimeContext,
@@ -114,6 +116,11 @@ const fetchAudienceData = createStep({
     startDate: z.string().optional().describe('分析開始日 (YYYY-MM-DD)'),
     endDate: z.string().optional().describe('分析終了日 (YYYY-MM-DD)'),
   }),
+  outputSchema: z.object({
+    geography: z.any(),
+    age: z.any(),
+    gender: z.any(),
+  }),
   execute: async (params) => {
     // @ts-ignore - TypeScript型定義の問題を一時的に無視
     const context = params.context;
@@ -122,11 +129,11 @@ const fetchAudienceData = createStep({
       startDate?: string,
       endDate?: string,
     }>('trigger');
-    
+
     if (!triggerData) {
       throw new Error('Trigger data not found');
     }
-    
+
     // @ts-ignore - TypeScript型定義の問題を一時的に無視
     const geoData = await getAudienceGeographics.execute({
       runtimeContext: params.runtimeContext,
@@ -138,7 +145,7 @@ const fetchAudienceData = createStep({
         metrics: ['viewerPercentage'],
       }
     });
-    
+
     // @ts-ignore - TypeScript型定義の問題を一時的に無視
     const ageData = await getAudienceGeographics.execute({
       runtimeContext: params.runtimeContext,
@@ -150,7 +157,7 @@ const fetchAudienceData = createStep({
         metrics: ['viewerPercentage'],
       }
     });
-    
+
     // @ts-ignore - TypeScript型定義の問題を一時的に無視
     const genderData = await getAudienceGeographics.execute({
       runtimeContext: params.runtimeContext,
@@ -162,7 +169,7 @@ const fetchAudienceData = createStep({
         metrics: ['viewerPercentage'],
       }
     });
-    
+
     return {
       geography: geoData,
       age: ageData,
@@ -179,6 +186,10 @@ const fetchAudienceData = createStep({
 const generateAnalyticsReport = createStep({
   id: 'generate-analytics-report',
   description: 'KPI データと視聴者データを元に分析レポートを生成',
+  inputSchema: z.object({}),
+  outputSchema: z.object({
+    report: z.string(),
+  }),
   execute: async (params) => {
     // @ts-ignore - TypeScript型定義の問題を一時的に無視
     const context = params.context;
@@ -186,11 +197,11 @@ const generateAnalyticsReport = createStep({
     const mastra = params.mastra;
     const channelData = context?.getStepResult(fetchChannelAnalytics);
     const audienceData = context?.getStepResult(fetchAudienceData);
-    
+
     if (!channelData) {
       throw new Error('Channel analytics data not found');
     }
-    
+
     const prompt = `以下の YouTube チャンネル分析データをもとに、戦略的な分析レポートを作成してください。
 
     チャンネル KPI データ:
@@ -200,21 +211,21 @@ const generateAnalyticsReport = createStep({
     ${JSON.stringify(audienceData, null, 2)}` : '視聴者属性データは利用できません。'}
     
     このデータから、チャンネルの現状分析、改善点、具体的なアクションプランを含む詳細なレポートを作成してください。`;
-    
+
     const response = await analyticsAgent.stream([
       {
         role: 'user',
         content: prompt,
       },
     ]);
-    
+
     let reportText = '';
-    
+
     for await (const chunk of response.textStream) {
       process.stdout.write(chunk);
       reportText += chunk;
     }
-    
+
     return {
       report: reportText,
     };
@@ -230,6 +241,7 @@ const fetchVideoAnalytics = createStep({
   id: 'fetch-video-analytics',
   description: '特定動画の詳細 KPI データを取得',
   inputSchema: videoAnalyticsInputSchema,
+  outputSchema: z.any(),
   execute: async (params) => {
     // @ts-ignore - TypeScript型定義の問題を一時的に無視
     const context = params.context;
@@ -240,11 +252,11 @@ const fetchVideoAnalytics = createStep({
       endDate?: string,
       metrics?: string[],
     }>('trigger');
-    
+
     if (!triggerData) {
       throw new Error('Trigger data not found');
     }
-    
+
     // @ts-ignore - TypeScript型定義の問題を一時的に無視
     return await getVideoAnalytics.execute({
       runtimeContext: params.runtimeContext,
@@ -274,6 +286,11 @@ const fetchVideoAudienceData = createStep({
     startDate: z.string().optional().describe('分析開始日 (YYYY-MM-DD)'),
     endDate: z.string().optional().describe('分析終了日 (YYYY-MM-DD)'),
   }),
+  outputSchema: z.object({
+    geography: z.any(),
+    age: z.any(),
+    gender: z.any(),
+  }),
   execute: async (params) => {
     // @ts-ignore - TypeScript型定義の問題を一時的に無視
     const context = params.context;
@@ -283,11 +300,11 @@ const fetchVideoAudienceData = createStep({
       startDate?: string,
       endDate?: string,
     }>('trigger');
-    
+
     if (!triggerData) {
       throw new Error('Trigger data not found');
     }
-    
+
     // @ts-ignore - TypeScript型定義の問題を一時的に無視
     const geoData = await getAudienceGeographics.execute({
       runtimeContext: params.runtimeContext,
@@ -300,7 +317,7 @@ const fetchVideoAudienceData = createStep({
         metrics: ['viewerPercentage'],
       }
     });
-    
+
     // @ts-ignore - TypeScript型定義の問題を一時的に無視
     const ageData = await getAudienceGeographics.execute({
       runtimeContext: params.runtimeContext,
@@ -313,7 +330,7 @@ const fetchVideoAudienceData = createStep({
         metrics: ['viewerPercentage'],
       }
     });
-    
+
     // @ts-ignore - TypeScript型定義の問題を一時的に無視
     const genderData = await getAudienceGeographics.execute({
       runtimeContext: params.runtimeContext,
@@ -326,7 +343,7 @@ const fetchVideoAudienceData = createStep({
         metrics: ['viewerPercentage'],
       }
     });
-    
+
     return {
       geography: geoData,
       age: ageData,
@@ -343,6 +360,10 @@ const fetchVideoAudienceData = createStep({
 const generateVideoReport = createStep({
   id: 'generate-video-report',
   description: '動画 KPI データと視聴者データを元に分析レポートを生成',
+  inputSchema: z.object({}),
+  outputSchema: z.object({
+    report: z.string(),
+  }),
   execute: async (params) => {
     // @ts-ignore - TypeScript型定義の問題を一時的に無視
     const context = params.context;
@@ -350,11 +371,11 @@ const generateVideoReport = createStep({
     const mastra = params.mastra;
     const videoData = context?.getStepResult(fetchVideoAnalytics);
     const audienceData = context?.getStepResult(fetchVideoAudienceData);
-    
+
     if (!videoData) {
       throw new Error('Video analytics data not found');
     }
-    
+
     const prompt = `以下の YouTube 動画分析データをもとに、戦略的な分析レポートを作成してください。
 
     動画 KPI データ:
@@ -364,244 +385,188 @@ const generateVideoReport = createStep({
     ${JSON.stringify(audienceData, null, 2)}` : '視聴者属性データは利用できません。'}
     
     このデータから、動画のパフォーマンス分析、改善点、次回動画への具体的なアクションプランを含む詳細なレポートを作成してください。`;
-    
+
     const response = await analyticsAgent.stream([
       {
         role: 'user',
         content: prompt,
       },
     ]);
-    
+
     let reportText = '';
-    
+
     for await (const chunk of response.textStream) {
       process.stdout.write(chunk);
       reportText += chunk;
     }
-    
+
     return {
       report: reportText,
     };
   },
 });
 
-// 一時的にワークフローの定義をコメントアウト
-/*
-const youtubeChannelAnalyticsWorkflow = new Workflow({
-  name: 'youtube-channel-analytics-workflow',
-  triggerSchema: z.object({
+// バリデーションステップ（チャンネル分析）
+const validateChannelAnalyticsInputStep = createStep({
+  id: 'validate-channel-analytics-input',
+  description: 'Validate input for channel analytics',
+  inputSchema: z.object({
     channelId: z.string().describe('分析対象のチャンネル ID'),
     startDate: z.string().optional().describe('分析開始日 (YYYY-MM-DD)'),
     endDate: z.string().optional().describe('分析終了日 (YYYY-MM-DD)'),
     metrics: z.array(z.string()).optional().describe('取得する指標のリスト'),
     dimensions: z.string().optional().describe('分析単位 (day/month など)'),
   }),
-})
-  .steps([fetchChannelAnalytics, fetchAudienceData, generateAnalyticsReport]);
+  outputSchema: z.object({
+    isValid: z.boolean(),
+    message: z.string().optional(),
+    validatedInput: z.object({
+      channelId: z.string(),
+      startDate: z.string().optional(),
+      endDate: z.string().optional(),
+      metrics: z.array(z.string()).optional(),
+      dimensions: z.string().optional(),
+    }).optional(),
+  }),
+  execute: async (params) => {
+    // @ts-ignore - TypeScript型定義の問題を一時的に無視
+    const context = params.context;
+    const input = context?.getStepResult('trigger');
 
-const youtubeVideoAnalyticsWorkflow = new Workflow({
-  name: 'youtube-video-analytics-workflow',
-  triggerSchema: z.object({
+    if (!input) {
+      return {
+        isValid: false,
+        message: 'Input data not found',
+      };
+    }
+
+    if (!input.channelId) {
+      return {
+        isValid: false,
+        message: 'Channel ID is required',
+      };
+    }
+
+    return {
+      isValid: true,
+      validatedInput: input,
+    };
+  },
+});
+
+// バリデーションステップ（動画分析）
+const validateVideoAnalyticsInputStep = createStep({
+  id: 'validate-video-analytics-input',
+  description: 'Validate input for video analytics',
+  inputSchema: z.object({
     channelId: z.string().describe('チャンネル ID'),
     videoId: z.string().describe('分析対象の動画 ID'),
     startDate: z.string().optional().describe('分析開始日 (YYYY-MM-DD)'),
     endDate: z.string().optional().describe('分析終了日 (YYYY-MM-DD)'),
     metrics: z.array(z.string()).optional().describe('取得する指標のリスト'),
   }),
-})
-  .steps([fetchVideoAnalytics, fetchVideoAudienceData, generateVideoReport]);
+  outputSchema: z.object({
+    isValid: z.boolean(),
+    message: z.string().optional(),
+    validatedInput: z.object({
+      channelId: z.string(),
+      videoId: z.string(),
+      startDate: z.string().optional(),
+      endDate: z.string().optional(),
+      metrics: z.array(z.string()).optional(),
+    }).optional(),
+  }),
+  execute: async (params) => {
+    // @ts-ignore - TypeScript型定義の問題を一時的に無視
+    const context = params.context;
+    const input = context?.getStepResult('trigger');
 
-youtubeChannelAnalyticsWorkflow.commit();
-youtubeVideoAnalyticsWorkflow.commit();
-*/
+    if (!input) {
+      return {
+        isValid: false,
+        message: 'Input data not found',
+      };
+    }
+
+    if (!input.channelId) {
+      return {
+        isValid: false,
+        message: 'Channel ID is required',
+      };
+    }
+
+    if (!input.videoId) {
+      return {
+        isValid: false,
+        message: 'Video ID is required',
+      };
+    }
+
+    return {
+      isValid: true,
+      validatedInput: input,
+    };
+  },
+});
 
 /**
  * YouTubeチャンネル分析ワークフロー
  * チャンネルの分析データを取得し、レポートを生成する
  */
-const youtubeChannelAnalyticsWorkflow = {
-  name: 'youtube-channel-analytics-workflow',
+const youtubeChannelAnalyticsWorkflow = createWorkflow({
+  id: 'youtube-channel-analytics-workflow',
   description: 'チャンネルの分析データを取得し、レポートを生成するワークフロー',
-  
-  // 実行メソッド
-  run: async (input: {
-    channelId: string;
-    startDate?: string;
-    endDate?: string;
-    metrics?: string[];
-    dimensions?: string;
-  }) => {
-    try {
-      console.log('YouTube Channel Analytics Workflow が実行されました');
-      console.log('入力:', input);
-      
-      // 入力バリデーション
-      if (!input || !input.channelId) {
-        return {
-          success: false,
-          message: 'Channel ID is required'
-        };
-      }
-      
-      // 実際のステップを実行
-      // @ts-ignore - TypeScript型定義の問題を一時的に無視
-      const step1Result = await fetchChannelAnalytics.execute({
-        // @ts-ignore - TypeScript型定義の問題を一時的に無視
-        runtimeContext: {},
-        context: {
-          getStepResult: () => input
-        }
-      });
-      
-      // @ts-ignore - TypeScript型定義の問題を一時的に無視
-      const step2Result = await fetchAudienceData.execute({
-        // @ts-ignore - TypeScript型定義の問題を一時的に無視
-        runtimeContext: {},
-        context: {
-          getStepResult: () => input
-        }
-      });
-      
-      // @ts-ignore - TypeScript型定義の問題を一時的に無視
-      const step3Result = await generateAnalyticsReport.execute({
-        // @ts-ignore - TypeScript型定義の問題を一時的に無視
-        runtimeContext: {},
-        context: {
-          getStepResult: (step: any) => {
-            if (step === fetchChannelAnalytics) {
-              return step1Result;
-            } else if (step === fetchAudienceData) {
-              return step2Result;
-            }
-            return null;
-          }
-        },
-        // @ts-ignore - TypeScript型定義の問題を一時的に無視
-        mastra: null
-      });
-      
-      return {
-        success: true,
-        message: 'ワークフローが正常に実行されました',
-        result: {
-          ...step3Result
-        }
-      };
-    } catch (error) {
-      console.error('ワークフロー実行エラー:', error);
-      return {
-        success: false,
-        message: `エラーが発生しました: ${error instanceof Error ? error.message : 'Unknown error'}`
-      };
-    }
-  },
-  
-  // Mastraに登録するためのメソッド
-  _mastra: null,
-  __registerMastra: function(mastra: any) { this._mastra = mastra; },
-  __registerPrimitives: function() {},
-  commit: () => {}
-};
+  inputSchema: z.object({
+    channelId: z.string().describe('分析対象のチャンネル ID'),
+    startDate: z.string().optional().describe('分析開始日 (YYYY-MM-DD)'),
+    endDate: z.string().optional().describe('分析終了日 (YYYY-MM-DD)'),
+    metrics: z.array(z.string()).optional().describe('取得する指標のリスト'),
+    dimensions: z.string().optional().describe('分析単位 (day/month など)'),
+  }),
+  outputSchema: z.object({
+    success: z.boolean(),
+    message: z.string(),
+    result: z.object({
+      report: z.string(),
+    }).optional(),
+  }),
+})
+  .then(validateChannelAnalyticsInputStep)
+  .then(fetchChannelAnalytics)
+  .then(fetchAudienceData)
+  .then(generateAnalyticsReport);
+
+// ワークフローをコミット
+youtubeChannelAnalyticsWorkflow.commit();
 
 /**
  * YouTube動画分析ワークフロー
  * 特定動画の分析データを取得し、レポートを生成する
  */
-const youtubeVideoAnalyticsWorkflow = {
-  name: 'youtube-video-analytics-workflow',
+const youtubeVideoAnalyticsWorkflow = createWorkflow({
+  id: 'youtube-video-analytics-workflow',
   description: '特定動画の分析データを取得し、レポートを生成するワークフロー',
-  
-  // 実行メソッド
-  run: async (input: {
-    channelId: string;
-    videoId: string;
-    startDate?: string;
-    endDate?: string;
-    metrics?: string[];
-  }) => {
-    try {
-      console.log('YouTube Video Analytics Workflow が実行されました');
-      console.log('入力:', input);
-      
-      // 入力バリデーション
-      if (!input || !input.channelId) {
-        return {
-          success: false,
-          message: 'Channel ID is required'
-        };
-      }
-      
-      if (!input.videoId) {
-        return {
-          success: false,
-          message: 'Video ID is required'
-        };
-      }
-      
-      // 実際のステップを実行
-      // @ts-ignore - TypeScript型定義の問題を一時的に無視
-      // @ts-ignore - TypeScript型定義の問題を一時的に無視
-      const step1Result = await fetchVideoAnalytics.execute({
-        // @ts-ignore - TypeScript型定義の問題を一時的に無視
-        runtimeContext: {},
-        context: {
-          getStepResult: () => ({
-            ...input,
-            dimensions: 'day',
-          })
-        }
-      });
-      
-      // @ts-ignore - TypeScript型定義の問題を一時的に無視
-      // @ts-ignore - TypeScript型定義の問題を一時的に無視
-      const step2Result = await fetchVideoAudienceData.execute({
-        // @ts-ignore - TypeScript型定義の問題を一時的に無視
-        runtimeContext: {},
-        context: {
-          getStepResult: () => input
-        }
-      });
-      
-      // @ts-ignore - TypeScript型定義の問題を一時的に無視
-      // @ts-ignore - TypeScript型定義の問題を一時的に無視
-      const step3Result = await generateVideoReport.execute({
-        // @ts-ignore - TypeScript型定義の問題を一時的に無視
-        runtimeContext: {},
-        context: {
-          getStepResult: (step: any) => {
-            if (step === fetchVideoAnalytics) {
-              return step1Result;
-            } else if (step === fetchVideoAudienceData) {
-              return step2Result;
-            }
-            return null;
-          }
-        },
-        // @ts-ignore - TypeScript型定義の問題を一時的に無視
-        mastra: null
-      });
-      
-      return {
-        success: true,
-        message: 'ワークフローが正常に実行されました',
-        result: {
-          ...step3Result
-        }
-      };
-    } catch (error) {
-      console.error('ワークフロー実行エラー:', error);
-      return {
-        success: false,
-        message: `エラーが発生しました: ${error instanceof Error ? error.message : 'Unknown error'}`
-      };
-    }
-  },
-  
-  // Mastraに登録するためのメソッド
-  _mastra: null,
-  __registerMastra: function(mastra: any) { this._mastra = mastra; },
-  __registerPrimitives: function() {},
-  commit: () => {}
-};
+  inputSchema: z.object({
+    channelId: z.string().describe('チャンネル ID'),
+    videoId: z.string().describe('分析対象の動画 ID'),
+    startDate: z.string().optional().describe('分析開始日 (YYYY-MM-DD)'),
+    endDate: z.string().optional().describe('分析終了日 (YYYY-MM-DD)'),
+    metrics: z.array(z.string()).optional().describe('取得する指標のリスト'),
+  }),
+  outputSchema: z.object({
+    success: z.boolean(),
+    message: z.string(),
+    result: z.object({
+      report: z.string(),
+    }).optional(),
+  }),
+})
+  .then(validateVideoAnalyticsInputStep)
+  .then(fetchVideoAnalytics)
+  .then(fetchVideoAudienceData)
+  .then(generateVideoReport);
+
+// ワークフローをコミット
+youtubeVideoAnalyticsWorkflow.commit();
 
 export { youtubeChannelAnalyticsWorkflow, youtubeVideoAnalyticsWorkflow };
