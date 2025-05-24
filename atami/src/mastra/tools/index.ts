@@ -93,7 +93,11 @@ export { youtubeChannelConceptTool } from './channelConcept';
 export { youtubeThumbnailTitleGeneratorTool } from './thumbnailTitleGenerator';
 export { youtubeVideoPlanningTool } from './videoPlanningSeo';
 export { keywordResearchTool } from './keywordResearch';
+<<<<<<< HEAD
 export { youtubeVideoScriptGeneratorTool } from './videoScriptGenerator';
+=======
+export { fetchYoutubeAnalyticsTool } from './fetchYoutubeAnalytics';
+>>>>>>> 7d667c73f69e978462779b1241596d1227112dc9
 
 export const youtubeChannelPlannerTool = createTool({
   id: 'youtube-channel-planner',

@@ -18,6 +18,7 @@ import {
   keywordResearchWorkflow,
   youtubeChannelConceptDesignWorkflow,
   youtubeKeywordStrategyWorkflow,
+<<<<<<< HEAD
   youtubeVideoScriptGeneratorWorkflow,
   // 新しく実装したワークフロー
   youtubeLongFormRoadmapWorkflow,
@@ -27,6 +28,9 @@ import {
   youtubeContentScoringWorkflow,
   youtubeShortsIdeationWorkflow,
   youtubeShortsScriptWorkflow
+=======
+  youtubeSearchWorkflow
+>>>>>>> 7d667c73f69e978462779b1241596d1227112dc9
 } from './workflows';
 // Langchainのチェーンは別途インポートして使用する
 import { youtubeVideoScriptGeneratorChain } from './workflows';
@@ -43,6 +47,8 @@ import {
 } from './agents';
 import { titleGeneratorApi } from './api/titleGenerator';
 
+export { consistencyEvalStep } from './steps';
+
 export const mastra = new Mastra({
   apiRoutes: [
     titleGeneratorApi
@@ -58,6 +64,7 @@ export const mastra = new Mastra({
     keywordResearchWorkflow,
     youtubeChannelConceptDesignWorkflow,
     youtubeKeywordStrategyWorkflow,
+<<<<<<< HEAD
     youtubeVideoScriptGeneratorWorkflow,
     // 新しく実装したワークフロー
     youtubeLongFormRoadmapWorkflow,
@@ -68,6 +75,9 @@ export const mastra = new Mastra({
     youtubeShortsIdeationWorkflow,
     youtubeShortsScriptWorkflow
     // Langchainのチェーンは直接Mastraに登録できないため、別途使用する
+=======
+    youtubeSearchWorkflow
+>>>>>>> 7d667c73f69e978462779b1241596d1227112dc9
   },
   agents: {
     youtubeAgent,
