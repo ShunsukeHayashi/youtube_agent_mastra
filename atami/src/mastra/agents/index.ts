@@ -1,4 +1,4 @@
-import { anthropic } from '@ai-sdk/anthropic';
+import { openai } from '@ai-sdk/openai';
 import { Agent } from '@mastra/core/agent';
 import { Memory } from '@mastra/memory';
 import { LibSQLStore } from '@mastra/libsql';
@@ -19,7 +19,7 @@ export const youtubeAgent = new Agent({
       
       Use the youtubeSearchTool to search for videos, channels, or playlists.
   `,
-  model: anthropic('claude-3-7-sonnet-20250219'),
+  model: openai('gpt-4o'),
   tools: { youtubeSearchTool },
   memory: new Memory({
     storage: new LibSQLStore({
@@ -68,7 +68,7 @@ export const youtubeChannelPlannerAgent = new Agent({
       
       Present your final recommendations in a well-structured format with clear sections and numbered lists for easy reference.
   `,
-  model: anthropic('claude-3-7-sonnet-20250219'),
+  model: openai('gpt-4o'),
   tools: { youtubeChannelPlannerTool },
   memory: new Memory({
     storage: new LibSQLStore({

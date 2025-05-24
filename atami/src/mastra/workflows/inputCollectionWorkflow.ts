@@ -221,7 +221,7 @@ const validateInputCollectionInputStep = createStep({
 });
 
 // 新しいワークフロー定義
-const inputCollectionWorkflow = createWorkflow({
+export const inputCollectionWorkflow = createWorkflow({
   id: 'youtube-input-collection-workflow',
   description: 'Collect initial input for YouTube channel operation',
   inputSchema: z.object({
@@ -278,5 +278,3 @@ const inputCollectionWorkflow = createWorkflow({
 
 // ワークフローをコミット
 inputCollectionWorkflow.commit();
-
-export { inputCollectionWorkflow };

@@ -1,4 +1,4 @@
-import { anthropic } from '@ai-sdk/anthropic';
+import { openai } from '@ai-sdk/openai';
 import { createStep } from '@mastra/core';
 import { createWorkflow } from '@mastra/core/workflows';
 import { z } from 'zod';
@@ -6,7 +6,7 @@ import { youtubeVideoPlanningAgent } from '../agents/videoPlanningAgent';
 import { youtubeVideoPlanningTool } from '../tools/videoPlanningSeo';
 import { videoPlanningInputSchema } from '../types';
 
-const llm = anthropic('claude-3-7-sonnet-20250219');
+const llm = openai('gpt-4o');
 
 /**
  * Step to generate video planning and SEO optimization

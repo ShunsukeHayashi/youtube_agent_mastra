@@ -1,4 +1,3 @@
-
 // @ts-nocheck
 // .envファイルを読み込む
 import dotenv from 'dotenv';
@@ -17,8 +16,19 @@ import {
   youtubeVideoPlanningWorkflow,
   keywordResearchWorkflow,
   youtubeChannelConceptDesignWorkflow,
-  youtubeKeywordStrategyWorkflow
+  youtubeKeywordStrategyWorkflow,
+  youtubeVideoScriptGeneratorWorkflow,
+  youtubeLongFormRoadmapWorkflow,
+  youtubeLongFormOsaruWorkflow,
+  youtubeLongFormMoezoWorkflow,
+  youtubeLongFormConversationWorkflow,
+  youtubeContentScoringWorkflow,
+  youtubeShortsIdeationWorkflow,
+  youtubeShortsScriptWorkflow,
+  youtubeSearchWorkflow
 } from './workflows';
+// Langchainのチェーンは別途インポートして使用する
+import { youtubeVideoScriptGeneratorChain } from './workflows';
 import {
   youtubeAgent,
   youtubeTitleGeneratorAgent,
@@ -30,8 +40,14 @@ import {
   youtubeVideoPlanningAgent,
   keywordResearchAgent
 } from './agents';
+import { titleGeneratorApi } from './api/titleGenerator';
+
+export { consistencyEvalStep } from './steps';
 
 export const mastra = new Mastra({
+  apiRoutes: [
+    titleGeneratorApi
+  ],
   workflows: {
     youtubeTitleGeneratorWorkflow,
     youtubeChannelAnalyticsWorkflow,
@@ -42,7 +58,16 @@ export const mastra = new Mastra({
     youtubeVideoPlanningWorkflow,
     keywordResearchWorkflow,
     youtubeChannelConceptDesignWorkflow,
-    youtubeKeywordStrategyWorkflow
+    youtubeKeywordStrategyWorkflow,
+    youtubeVideoScriptGeneratorWorkflow,
+    youtubeLongFormRoadmapWorkflow,
+    youtubeLongFormOsaruWorkflow,
+    youtubeLongFormMoezoWorkflow,
+    youtubeLongFormConversationWorkflow,
+    youtubeContentScoringWorkflow,
+    youtubeShortsIdeationWorkflow,
+    youtubeShortsScriptWorkflow,
+    youtubeSearchWorkflow
   },
   agents: {
     youtubeAgent,
