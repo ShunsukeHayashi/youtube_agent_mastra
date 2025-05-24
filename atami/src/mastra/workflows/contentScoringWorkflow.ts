@@ -184,6 +184,9 @@ const youtubeContentScoringWorkflow = createWorkflow({
   .then(generateFeedbackStep)
   .then(generateScoringReportStep);
 
+/* ------------------------------------------------------------------ *
+ * 3. commit & export
+ * ------------------------------------------------------------------ */
 youtubeContentScoringWorkflow.commit();
 
 export { 
@@ -193,32 +196,3 @@ export {
   generateFeedbackStep,
   generateScoringReportStep 
 };
-/* ------------------------------------------------------------------ *
- * 2. ワークフロー定義
- * ------------------------------------------------------------------ */
-const youtubeContentScoringWorkflow = createWorkflow({
-  id: 'youtube-content-scoring-workflow',
-  description:
-    'YouTube コンテンツの品質評価とフィードバックを提供するワークフロー',
-  inputSchema: validateContentScoringInputStep.inputSchema,
-  outputSchema: z.object({
-    success: z.boolean(),
-    message: z.string(),
-    result: z
-      .object({
-        scoringReport:
-          generateScoringReportStep.outputSchema.shape.scoringReport,
-      })
-      .optional(),
-  }),
-})
-  .then(validateContentScoringInputStep)
-  .then(analyzeContentStep)
-  .then(generateFeedbackStep)
-  .then(generateScoringReportStep);
-
-/* ------------------------------------------------------------------ *
- * 3. commit & export
- * ------------------------------------------------------------------ */
-youtubeContentScoringWorkflow.commit();
-export { youtubeContentScoringWorkflow };
