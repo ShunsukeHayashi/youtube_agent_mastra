@@ -31,6 +31,8 @@ import {
   keywordResearchAgent
 } from './agents';
 
+export { consistencyEvalStep } from './steps';
+
 export const mastra = new Mastra({
   workflows: {
     youtubeTitleGeneratorWorkflow,
