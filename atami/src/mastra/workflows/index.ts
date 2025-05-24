@@ -14,6 +14,7 @@ export { youtubeVideoScriptGeneratorWorkflow } from './videoScriptGeneratorWorkf
 export { youtubeVideoScriptGeneratorChain } from './videoScriptGeneratorWorkflow.langchain';
 export { youtubeTitleGeneratorChain } from './titleGeneratorWorkflow.langchain';
 export { youtubeTitleGeneratorVercelAI } from './titleGeneratorWorkflow.vercel-ai';
+export { youtubeSearchWorkflow } from './youtubeSearchWorkflow';
 
 // 新しく実装したワークフローのインポート
 export { youtubeLongFormRoadmapWorkflow } from './longFormRoadmapWorkflow';
@@ -23,33 +24,6 @@ export { youtubeLongFormConversationWorkflow } from './longFormConversationWorkf
 export { youtubeContentScoringWorkflow } from './contentScoringWorkflow';
 export { youtubeShortsIdeationWorkflow } from './shortsIdeationWorkflow';
 export { youtubeShortsScriptWorkflow } from './shortsScriptWorkflow';
-
-// ダミーワークフロー（vNext形式で定義）
-const youtubeSearchWorkflow = createWorkflow({
-  id: 'youtube-search-workflow',
-  description: 'Search for YouTube videos based on keywords (Not implemented)',
-  inputSchema: z.object({
-    keywords: z.string().describe('Keywords to search for'),
-    maxResults: z.number().optional().describe('Maximum number of results to return'),
-  }),
-  outputSchema: z.object({
-    success: z.boolean(),
-    message: z.string(),
-    result: z.object({
-      videos: z.array(z.object({
-        id: z.string(),
-        title: z.string(),
-        description: z.string(),
-        thumbnailUrl: z.string(),
-        channelTitle: z.string(),
-        publishedAt: z.string(),
-      })).optional(),
-    }).optional(),
-  }),
-});
-
-// ダミーワークフローをコミット
-youtubeSearchWorkflow.commit();
 
 const youtubeChannelPlannerWorkflow = createWorkflow({
   id: 'youtube-channel-planner-workflow',
@@ -74,4 +48,4 @@ const youtubeChannelPlannerWorkflow = createWorkflow({
 // ダミーワークフローをコミット
 youtubeChannelPlannerWorkflow.commit();
 
-export { youtubeSearchWorkflow, youtubeChannelPlannerWorkflow };
+export { youtubeChannelPlannerWorkflow };
