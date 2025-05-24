@@ -46,13 +46,23 @@ const youtubeVideoAnalyticsWorkflow = {
   commit: jest.fn()
 };
 
+const youtubeCtrGapImprovementWorkflow = {
+  name: 'youtube-ctr-gap-improvement-workflow',
+  run: jest.fn(),
+  _mastra: null,
+  __registerMastra: jest.fn(),
+  __registerPrimitives: jest.fn(),
+  commit: jest.fn()
+};
+
 // モックをエクスポート
 jest.mock('../src/mastra/workflows/index', () => ({
   youtubeSearchWorkflow,
   youtubeChannelPlannerWorkflow,
   youtubeTitleGeneratorWorkflow,
   youtubeChannelAnalyticsWorkflow,
-  youtubeVideoAnalyticsWorkflow
+  youtubeVideoAnalyticsWorkflow,
+  youtubeCtrGapImprovementWorkflow
 }));
 
 import * as dotenv from 'dotenv';
@@ -223,6 +233,25 @@ describe('YouTube Workflows', () => {
       expect(result).toBeDefined();
       expect(result).toBe(mockResult);
       expect(youtubeVideoAnalyticsWorkflow.run).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('youtubeCtrGapImprovementWorkflow', () => {
+    test('should be properly initialized', () => {
+      expect(youtubeCtrGapImprovementWorkflow).toBeDefined();
+      expect(youtubeCtrGapImprovementWorkflow.name).toBe('youtube-ctr-gap-improvement-workflow');
+      expect(youtubeCtrGapImprovementWorkflow.run).toBeDefined();
+    });
+
+    test('should successfully run the workflow', async () => {
+      const mockResult = { ctr: 2.8, gapLevel: 'low', reason: 'CTRが平均以下です', message: 'sample' };
+      youtubeCtrGapImprovementWorkflow.run.mockResolvedValueOnce(mockResult);
+
+      const result = await youtubeCtrGapImprovementWorkflow.run({ video_id: 'abc', category: '教育' });
+
+      expect(result).toBeDefined();
+      expect(result).toBe(mockResult);
+      expect(youtubeCtrGapImprovementWorkflow.run).toHaveBeenCalledTimes(1);
     });
   });
 });

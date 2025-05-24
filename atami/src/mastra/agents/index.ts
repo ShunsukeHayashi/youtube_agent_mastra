@@ -42,6 +42,7 @@ export { channelConceptAgent } from './channelConceptAgent';
 export { youtubeThumbnailTitleGeneratorAgent } from './thumbnailTitleGeneratorAgent';
 export { youtubeVideoPlanningAgent } from './videoPlanningAgent';
 export { keywordResearchAgent } from './keywordResearchAgent';
+export { analyticsAdvisorAgent } from './analyticsAdvisorAgent';
 
 export const youtubeChannelPlannerAgent = new Agent({
   name: 'YouTube Channel Planning Agent',

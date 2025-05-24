@@ -17,7 +17,8 @@ import {
   youtubeVideoPlanningWorkflow,
   keywordResearchWorkflow,
   youtubeChannelConceptDesignWorkflow,
-  youtubeKeywordStrategyWorkflow
+  youtubeKeywordStrategyWorkflow,
+  youtubeCtrGapImprovementWorkflow
 } from './workflows';
 import {
   youtubeAgent,
@@ -28,7 +29,8 @@ import {
   channelConceptAgent,
   youtubeThumbnailTitleGeneratorAgent,
   youtubeVideoPlanningAgent,
-  keywordResearchAgent
+  keywordResearchAgent,
+  analyticsAdvisorAgent
 } from './agents';
 
 export const mastra = new Mastra({
@@ -39,10 +41,11 @@ export const mastra = new Mastra({
     inputCollectionWorkflow,
     youtubeChannelConceptWorkflow,
     youtubeThumbnailTitleGeneratorWorkflow,
-    youtubeVideoPlanningWorkflow,
-    keywordResearchWorkflow,
-    youtubeChannelConceptDesignWorkflow,
-    youtubeKeywordStrategyWorkflow
+  youtubeVideoPlanningWorkflow,
+  keywordResearchWorkflow,
+  youtubeChannelConceptDesignWorkflow,
+    youtubeKeywordStrategyWorkflow,
+    youtubeCtrGapImprovementWorkflow
   },
   agents: {
     youtubeAgent,
@@ -53,7 +56,8 @@ export const mastra = new Mastra({
     channelConceptAgent,
     youtubeThumbnailTitleGeneratorAgent,
     youtubeVideoPlanningAgent,
-    keywordResearchAgent
+    keywordResearchAgent,
+    analyticsAdvisorAgent
   },
   storage: new LibSQLStore({
     // For persistent storage, use file path instead of memory
