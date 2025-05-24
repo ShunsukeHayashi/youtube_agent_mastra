@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <style>
+      body { font-family: 'Noto Sans JP'; padding: 10px; }
+      .section { margin-bottom: 16px; }
+    </style>
+  </head>
+  <body>
+    <div class="section">
+      <h3>動画検索</h3>
+      <input id="searchTerm" placeholder="キーワード入力" />
+      <button onclick="search()">検索</button>
+    </div>
+    <div class="section">
+      <h3>字幕取得＆要約</h3>
+      <input id="videoUrl" placeholder="YouTube URL" />
+      <button onclick="summarize()">要約</button>
+    </div>
+    <div class="section">
+      <h3>台本生成</h3>
+      <input id="scriptKeyword" placeholder="テーマキーワード" />
+      <button onclick="generateScript()">生成</button>
+    </div>
+    <div class="section">
+      <h3>動画分析</h3>
+      <input id="videoId" placeholder="動画ID or チャンネルID" />
+      <button onclick="analyze()">分析</button>
+    </div>
+
+    <script>
+      function search() {
+        google.script.run.searchVideo(document.getElementById('searchTerm').value);
+      }
+      function summarize() {
+        google.script.run.getSummary(document.getElementById('videoUrl').value);
+      }
+      function generateScript() {
+        google.script.run.generateScript(document.getElementById('scriptKeyword').value);
+      }
+      function analyze() {
+        google.script.run.analyzeVideo(document.getElementById('videoId').value);
+      }
+    </script>
+  </body>
+</html>
