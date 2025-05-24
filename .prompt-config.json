@@ -1,0 +1,11 @@
+{
+  "default": {
+    "max_chars": 3000
+  },
+  "claude": {
+    "max_chars": 6000
+  },
+  "gpt": {
+    "max_chars": 4000
+  }
+}
