@@ -19,7 +19,7 @@ const inputSchema = z.object({
 
 // APIエンドポイントの登録
 export const titleGeneratorApi = registerApiRoute('/title-generator', {
-    method: 'post',
+    method: 'POST',
     handler: async (c) => {
         try {
             // リクエストボディの取得と検証

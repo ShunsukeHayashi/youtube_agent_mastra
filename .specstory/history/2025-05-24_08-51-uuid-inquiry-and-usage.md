@@ -170,6 +170,124 @@ OK??
 
 _**Assistant**_
 
+Yes, the fix is complete!
+
+- The duplicate declaration and export of `youtubeContentScoringWorkflow` have been removed.
+- Now, there is only one definition and export for `youtubeContentScoringWorkflow` in your `contentScoringWorkflow.ts` file.
+- This resolves the TypeScript build error you encountered.
+
+You should now be able to build and deploy your project without the "already been declared" or "multiple exports" errors.
+
+If you run into any more issues or need further help, just let me know!
+
+---
+
+_**User**_
+
+
+
+---
+
+_**Assistant**_
+
+The error message you are seeing:
+
+```
+mastra : 用語 'mastra' は、コマンドレット、関数、スクリプト ファイル、または操作可能なプログラムの名前として認識されません。
+```
+
+means that the `mastra` command is not recognized in your terminal. This usually happens because:
+
+1. **Mastra CLI is not installed globally** (or locally in your project).
+2. **Your terminal does not have the correct PATH** to find the `mastra` executable.
+
+---
+
+## How to Fix
+
+### 1. Install Mastra CLI
+
+If you haven't installed the Mastra CLI, you can do so with:
+
+```sh
+npm install -g mastra
+```
+
+or, if you want to use it locally in your project:
+
+```sh
+npm install --save-dev mastra
+```
+
+### 2. If Installed Locally
+
+If you installed it locally, you can run it with:
+
+```sh
+npx mastra dev
+```
+
+### 3. Check Your PATH
+
+If you installed globally but still get this error, try restarting your terminal or computer to refresh your PATH.
+
+---
+
+## What to Do Next
+
+- Try running `npx mastra dev` in your project directory.
+- If that works, you can use `npx` each time, or install globally for convenience.
+- If you want to use it globally, run `npm install -g mastra` and then try `mastra dev` again.
+
+Let me know if you need help with installation or if you get any other errors!
+
+---
+
+_**User**_
+
+For the code present, we get this error:
+```
+Property 'input' does not exist on type '{ mastra: Mastra<Record<string, Agent<any, ToolsInput, Record<string, Metric>>>, Record<string, LegacyWorkflow<LegacyStep<string, any, any, StepExecutionContext<any, WorkflowContext<any, LegacyStep<...>[], Record<...>>>>[], string, any, any>>, ... 5 more ..., Record<...>>; ... 7 more ...; emitter: { ...; }; }'.
+```
+How can I resolve this? If you propose a fix, please make it concise.
+
+---
+
+_**Assistant**_
+
+This error occurs because the signature for the `execute` function in `createStep` expects a single parameter (usually called `context` or `args`), not destructured parameters like `{ input, runtimeContext }`.  
+You should accept the parameter as a single object and then access `input` and `runtimeContext` from it.
+
+**Concise fix:**  
+Change  
+```ts
+async execute({ input, runtimeContext }) {
+```
+to  
+```ts
+async execute(context) {
+  const { input, runtimeContext } = context;
+  // ...rest of your code
+```
+
+Do this for both `searchYoutubeStep` and `extractVideoInfoStep`.
+
+Would you like me to apply this fix for you?
+
+---
+
+_**User**_
+
+For the code present, we get this error:
+```
+Expected 1 arguments, but got 2.
+```
+How can I resolve this? If you propose a fix, please make it concise.
+
+---
+
+_**Assistant**_
+
 
 
 ---

@@ -28,8 +28,8 @@ export const fetchYoutubeAnalyticsTool = createTool({
       totalMinutes: z.number(),
     }),
   ),
-  execute: async ({ input }) => {
-    const tokens = await getTokenByUserId(input.userId);
+  execute: async ({ context }) => {
+    const tokens = await getTokenByUserId(context.userId);
     const oauth = getOAuthClient();
     if (!oauth) {
       throw new Error('OAuth client is not initialized');
@@ -41,8 +41,8 @@ export const fetchYoutubeAnalyticsTool = createTool({
 
     const res = await client.reports.query({
       ids: 'channel==MINE',
-      startDate: input.period.start,
-      endDate: input.period.end,
+      startDate: context.period.start,
+      endDate: context.period.end,
       metrics: 'views,averageViewDuration,estimatedMinutesWatched',
       dimensions: 'video',
       maxResults: 10,
