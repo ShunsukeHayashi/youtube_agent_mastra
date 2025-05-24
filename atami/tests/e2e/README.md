@@ -10,14 +10,17 @@ E2Eテストは、実際のワークフローを入力から出力まで完全�
 
 ```
 tests/e2e/
-├── setup.ts                    # テスト環境のセットアップと共通関数
-├── index.ts                    # すべてのE2Eテストを実行するエントリーポイント
-├── keywordResearch.e2e.test.ts # キーワードリサーチワークフローのテスト
-├── titleGenerator.e2e.test.ts  # タイトル生成ワークフローのテスト
-├── videoPlanning.e2e.test.ts   # 動画企画ワークフローのテスト
-├── playwright-test.ts          # Playwrightを使用したブラウザ自動化テスト
-├── screenshots/                # Playwrightテストで生成されるスクリーンショット
-└── README.md                   # このファイル
+├── setup.ts                        # テスト環境のセットアップと共通関数
+├── index.ts                        # すべてのE2Eテストを実行するエントリーポイント
+├── keywordResearch.e2e.test.ts     # キーワードリサーチワークフローのテスト
+├── titleGenerator.e2e.test.ts      # タイトル生成ワークフローのテスト
+├── videoPlanning.e2e.test.ts       # 動画企画ワークフローのテスト
+├── agent.e2e.test.ts               # エージェント初期化のテスト
+├── agent-ui.e2e.test.ts            # エージェントUIのテスト
+├── prompt-template.e2e.test.ts     # プロンプトテンプレートのテスト
+├── playwright-test.ts              # Playwrightを使用したブラウザ自動化テスト
+├── screenshots/                    # Playwrightテストで生成されるスクリーンショット
+└── README.md                       # このファイル
 ```
 
 ## テスト実行方法
@@ -76,6 +79,20 @@ YOUTUBE_API_KEY=your_youtube_api_key
 ```
 
 環境変数が設定されていない場合、テストはモックデータを使用して実行されます。
+
+## 新しく追加されたテスト
+
+### エージェント初期化テスト (`agent.e2e.test.ts`)
+
+このテストは、各エージェント（タイトル生成、サムネイル生成、キーワードリサーチなど）が正しく初期化されるかを確認します。エージェントのインスタンスが正しく作成され、名前やプロパティが期待通りに設定されているかをテストします。
+
+### エージェントUIテスト (`agent-ui.e2e.test.ts`)
+
+このテストは、Playwrightを使用してエージェントのUIが正しく表示されるかをテストします。ブラウザを起動し、ローカルサーバーに接続して、UIの表示を確認します。また、エージェントの選択や実行などの基本的な操作もテストします。
+
+### プロンプトテンプレートテスト (`prompt-template.e2e.test.ts`)
+
+このテストは、`prompt.md`ファイルに記載されているプロンプトテンプレートを使用して、エージェントが正しく動作するかをテストします。プロンプトファイルの存在確認、必要な情報が含まれているかの確認、エージェントのプロンプトとの整合性確認などを行います。
 
 ## テストの追加方法
 

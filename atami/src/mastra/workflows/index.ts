@@ -2,27 +2,27 @@ import { createWorkflow } from '@mastra/core/workflows';
 import { z } from 'zod';
 
 // 既存のワークフローのインポート
-export { youtubeTitleGeneratorWorkflow } from './titleGeneratorWorkflow';
-export { youtubeChannelAnalyticsWorkflow, youtubeVideoAnalyticsWorkflow } from './analyticsWorkflow';
-export { inputCollectionWorkflow } from './inputCollectionWorkflow';
-export { youtubeChannelConceptWorkflow } from './channelConceptWorkflow';
-export { youtubeThumbnailTitleGeneratorWorkflow } from './thumbnailTitleGeneratorWorkflow';
-export { youtubeVideoPlanningWorkflow } from './videoPlanningWorkflow';
-export { keywordResearchWorkflow } from './keywordResearchWorkflow';
-export { youtubeChannelConceptDesignWorkflow, youtubeKeywordStrategyWorkflow } from './youtubeWorkflows';
-export { youtubeVideoScriptGeneratorWorkflow } from './videoScriptGeneratorWorkflow';
-export { youtubeVideoScriptGeneratorChain } from './videoScriptGeneratorWorkflow.langchain';
-export { youtubeTitleGeneratorChain } from './titleGeneratorWorkflow.langchain';
-export { youtubeTitleGeneratorVercelAI } from './titleGeneratorWorkflow.vercel-ai';
+import { youtubeTitleGeneratorWorkflow } from './titleGeneratorWorkflow';
+import { youtubeChannelAnalyticsWorkflow, youtubeVideoAnalyticsWorkflow } from './analyticsWorkflow';
+import { inputCollectionWorkflow } from './inputCollectionWorkflow';
+import { youtubeChannelConceptWorkflow } from './channelConceptWorkflow';
+import { youtubeThumbnailTitleGeneratorWorkflow } from './thumbnailTitleGeneratorWorkflow';
+import { youtubeVideoPlanningWorkflow } from './videoPlanningWorkflow';
+import { keywordResearchWorkflow } from './keywordResearchWorkflow';
+import { youtubeChannelConceptDesignWorkflow, youtubeKeywordStrategyWorkflow } from './youtubeWorkflows';
+import { youtubeVideoScriptGeneratorWorkflow } from './videoScriptGeneratorWorkflow';
+import { youtubeVideoScriptGeneratorChain } from './videoScriptGeneratorWorkflow.langchain';
+import { youtubeTitleGeneratorChain } from './titleGeneratorWorkflow.langchain';
+import { youtubeTitleGeneratorVercelAI } from './titleGeneratorWorkflow.vercel-ai';
 
 // 新しく実装したワークフローのインポート
-export { youtubeLongFormRoadmapWorkflow } from './longFormRoadmapWorkflow';
-export { youtubeLongFormOsaruWorkflow } from './longFormOsaruWorkflow';
-export { youtubeLongFormMoezoWorkflow } from './longFormMoezoWorkflow';
-export { youtubeLongFormConversationWorkflow } from './longFormConversationWorkflow';
-export { youtubeContentScoringWorkflow } from './contentScoringWorkflow';
-export { youtubeShortsIdeationWorkflow } from './shortsIdeationWorkflow';
-export { youtubeShortsScriptWorkflow } from './shortsScriptWorkflow';
+import { youtubeLongFormRoadmapWorkflow } from './longFormRoadmapWorkflow';
+import { youtubeLongFormOsaruWorkflow } from './longFormOsaruWorkflow';
+import { youtubeLongFormMoezoWorkflow } from './longFormMoezoWorkflow';
+import { youtubeLongFormConversationWorkflow } from './longFormConversationWorkflow';
+import { youtubeContentScoringWorkflow } from './contentScoringWorkflow';
+import { youtubeShortsIdeationWorkflow  } from './shortsIdeationWorkflow';
+import { youtubeShortsScriptWorkflow } from './shortsScriptWorkflow';
 
 // ダミーワークフロー（vNext形式で定義）
 const youtubeSearchWorkflow = createWorkflow({
@@ -74,4 +74,28 @@ const youtubeChannelPlannerWorkflow = createWorkflow({
 // ダミーワークフローをコミット
 youtubeChannelPlannerWorkflow.commit();
 
-export { youtubeSearchWorkflow, youtubeChannelPlannerWorkflow };
+export {
+  youtubeTitleGeneratorWorkflow,
+  youtubeChannelAnalyticsWorkflow,
+  youtubeVideoAnalyticsWorkflow,
+  inputCollectionWorkflow,
+  youtubeChannelConceptWorkflow,
+  youtubeThumbnailTitleGeneratorWorkflow,
+  youtubeVideoPlanningWorkflow,
+  keywordResearchWorkflow,
+  youtubeChannelConceptDesignWorkflow,
+  youtubeKeywordStrategyWorkflow,
+  youtubeVideoScriptGeneratorWorkflow,
+  youtubeVideoScriptGeneratorChain,
+  youtubeTitleGeneratorChain,
+  youtubeTitleGeneratorVercelAI,
+  youtubeLongFormRoadmapWorkflow,
+  youtubeLongFormOsaruWorkflow,
+  youtubeLongFormMoezoWorkflow,
+  youtubeLongFormConversationWorkflow,
+  youtubeContentScoringWorkflow,
+  youtubeShortsIdeationWorkflow ,
+  youtubeShortsScriptWorkflow,
+  youtubeSearchWorkflow,
+  youtubeChannelPlannerWorkflow,
+};

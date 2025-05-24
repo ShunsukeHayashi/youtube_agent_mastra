@@ -1,4 +1,4 @@
-import { anthropic } from '@ai-sdk/anthropic';
+import { openai } from '@ai-sdk/openai';
 import { Agent } from '@mastra/core/agent';
 import { createStep } from '@mastra/core';
 import { createWorkflow } from '@mastra/core/workflows';
@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { getChannelAnalytics, getVideoAnalytics, getAudienceGeographics } from '../tools/youtube-analytics';
 import { channelAnalyticsInputSchema, videoAnalyticsInputSchema } from '../types';
 
-const llm = anthropic('claude-3-7-sonnet-20250219');
+const llm = openai('gpt-4o');
 
 /**
  * YouTube分析エージェント
@@ -64,6 +64,61 @@ const analyticsAgent = new Agent({
   `
 });
 
+const validateChannelAnalyticsInputStep = createStep({
+  id: 'validate-channel-analytics-input',
+  description: 'Validate input for channel analytics',
+  inputSchema: z.object({
+    channelId: z.string().describe('分析対象のチャンネル ID'),
+    startDate: z.string().optional().describe('分析開始日 (YYYY-MM-DD)'),
+    endDate: z.string().optional().describe('分析終了日 (YYYY-MM-DD)'),
+    metrics: z.array(z.string()).optional().describe('取得する指標のリスト'),
+    dimensions: z.string().optional().describe('分析単位 (day/month など)'),
+  }),
+  outputSchema: z.object({
+    channelId: z.string(),
+    startDate: z.string().optional(),
+    endDate: z.string().optional(),
+    metrics: z.array(z.string()).optional(),
+    dimensions: z.string().optional(),
+  }),
+  execute: async (params) => {
+    // @ts-ignore
+    const context = params.context;
+    const input = context?.getStepResult('trigger');
+    if (!input) throw new Error('Input data not found');
+    if (!input.channelId) throw new Error('Channel ID is required');
+    return input;
+  },
+});
+
+const validateVideoAnalyticsInputStep = createStep({
+  id: 'validate-video-analytics-input',
+  description: 'Validate input for video analytics',
+  inputSchema: z.object({
+    channelId: z.string().describe('チャンネル ID'),
+    videoId: z.string().describe('分析対象の動画 ID'),
+    startDate: z.string().optional().describe('分析開始日 (YYYY-MM-DD)'),
+    endDate: z.string().optional().describe('分析終了日 (YYYY-MM-DD)'),
+    metrics: z.array(z.string()).optional().describe('取得する指標のリスト'),
+  }),
+  outputSchema: z.object({
+    channelId: z.string(),
+    videoId: z.string(),
+    startDate: z.string().optional(),
+    endDate: z.string().optional(),
+    metrics: z.array(z.string()).optional(),
+  }),
+  execute: async (params) => {
+    // @ts-ignore
+    const context = params.context;
+    const input = context?.getStepResult('trigger');
+    if (!input) throw new Error('Input data not found');
+    if (!input.channelId) throw new Error('Channel ID is required');
+    if (!input.videoId) throw new Error('Video ID is required');
+    return input;
+  },
+});
+
 /**
  * チャンネル分析データ取得ステップ
  * チャンネルのKPIデータを取得する
@@ -72,7 +127,7 @@ const analyticsAgent = new Agent({
 const fetchChannelAnalytics = createStep({
   id: 'fetch-channel-analytics',
   description: 'チャンネルの KPI データを取得',
-  inputSchema: channelAnalyticsInputSchema,
+  inputSchema: validateChannelAnalyticsInputStep.outputSchema,
   outputSchema: z.any(),
   execute: async (params) => {
     // @ts-ignore - TypeScript型定義の問題を一時的に無視
@@ -111,11 +166,7 @@ const fetchChannelAnalytics = createStep({
 const fetchAudienceData = createStep({
   id: 'fetch-audience-data',
   description: 'チャンネル視聴者の属性データを取得',
-  inputSchema: z.object({
-    channelId: z.string().describe('分析対象のチャンネル ID'),
-    startDate: z.string().optional().describe('分析開始日 (YYYY-MM-DD)'),
-    endDate: z.string().optional().describe('分析終了日 (YYYY-MM-DD)'),
-  }),
+  inputSchema: fetchChannelAnalytics.outputSchema,
   outputSchema: z.object({
     geography: z.any(),
     age: z.any(),
@@ -186,7 +237,7 @@ const fetchAudienceData = createStep({
 const generateAnalyticsReport = createStep({
   id: 'generate-analytics-report',
   description: 'KPI データと視聴者データを元に分析レポートを生成',
-  inputSchema: z.object({}),
+  inputSchema: fetchAudienceData.outputSchema,
   outputSchema: z.object({
     report: z.string(),
   }),
@@ -240,7 +291,7 @@ const generateAnalyticsReport = createStep({
 const fetchVideoAnalytics = createStep({
   id: 'fetch-video-analytics',
   description: '特定動画の詳細 KPI データを取得',
-  inputSchema: videoAnalyticsInputSchema,
+  inputSchema: validateVideoAnalyticsInputStep.outputSchema,
   outputSchema: z.any(),
   execute: async (params) => {
     // @ts-ignore - TypeScript型定義の問題を一時的に無視
@@ -280,12 +331,7 @@ const fetchVideoAnalytics = createStep({
 const fetchVideoAudienceData = createStep({
   id: 'fetch-video-audience-data',
   description: '特定動画の視聴者属性データを取得',
-  inputSchema: z.object({
-    channelId: z.string().describe('チャンネル ID'),
-    videoId: z.string().describe('分析対象の動画 ID'),
-    startDate: z.string().optional().describe('分析開始日 (YYYY-MM-DD)'),
-    endDate: z.string().optional().describe('分析終了日 (YYYY-MM-DD)'),
-  }),
+  inputSchema: fetchVideoAnalytics.outputSchema,
   outputSchema: z.object({
     geography: z.any(),
     age: z.any(),
@@ -360,7 +406,7 @@ const fetchVideoAudienceData = createStep({
 const generateVideoReport = createStep({
   id: 'generate-video-report',
   description: '動画 KPI データと視聴者データを元に分析レポートを生成',
-  inputSchema: z.object({}),
+  inputSchema: fetchVideoAudienceData.outputSchema,
   outputSchema: z.object({
     report: z.string(),
   }),
@@ -402,109 +448,6 @@ const generateVideoReport = createStep({
 
     return {
       report: reportText,
-    };
-  },
-});
-
-// バリデーションステップ（チャンネル分析）
-const validateChannelAnalyticsInputStep = createStep({
-  id: 'validate-channel-analytics-input',
-  description: 'Validate input for channel analytics',
-  inputSchema: z.object({
-    channelId: z.string().describe('分析対象のチャンネル ID'),
-    startDate: z.string().optional().describe('分析開始日 (YYYY-MM-DD)'),
-    endDate: z.string().optional().describe('分析終了日 (YYYY-MM-DD)'),
-    metrics: z.array(z.string()).optional().describe('取得する指標のリスト'),
-    dimensions: z.string().optional().describe('分析単位 (day/month など)'),
-  }),
-  outputSchema: z.object({
-    isValid: z.boolean(),
-    message: z.string().optional(),
-    validatedInput: z.object({
-      channelId: z.string(),
-      startDate: z.string().optional(),
-      endDate: z.string().optional(),
-      metrics: z.array(z.string()).optional(),
-      dimensions: z.string().optional(),
-    }).optional(),
-  }),
-  execute: async (params) => {
-    // @ts-ignore - TypeScript型定義の問題を一時的に無視
-    const context = params.context;
-    const input = context?.getStepResult('trigger');
-
-    if (!input) {
-      return {
-        isValid: false,
-        message: 'Input data not found',
-      };
-    }
-
-    if (!input.channelId) {
-      return {
-        isValid: false,
-        message: 'Channel ID is required',
-      };
-    }
-
-    return {
-      isValid: true,
-      validatedInput: input,
-    };
-  },
-});
-
-// バリデーションステップ（動画分析）
-const validateVideoAnalyticsInputStep = createStep({
-  id: 'validate-video-analytics-input',
-  description: 'Validate input for video analytics',
-  inputSchema: z.object({
-    channelId: z.string().describe('チャンネル ID'),
-    videoId: z.string().describe('分析対象の動画 ID'),
-    startDate: z.string().optional().describe('分析開始日 (YYYY-MM-DD)'),
-    endDate: z.string().optional().describe('分析終了日 (YYYY-MM-DD)'),
-    metrics: z.array(z.string()).optional().describe('取得する指標のリスト'),
-  }),
-  outputSchema: z.object({
-    isValid: z.boolean(),
-    message: z.string().optional(),
-    validatedInput: z.object({
-      channelId: z.string(),
-      videoId: z.string(),
-      startDate: z.string().optional(),
-      endDate: z.string().optional(),
-      metrics: z.array(z.string()).optional(),
-    }).optional(),
-  }),
-  execute: async (params) => {
-    // @ts-ignore - TypeScript型定義の問題を一時的に無視
-    const context = params.context;
-    const input = context?.getStepResult('trigger');
-
-    if (!input) {
-      return {
-        isValid: false,
-        message: 'Input data not found',
-      };
-    }
-
-    if (!input.channelId) {
-      return {
-        isValid: false,
-        message: 'Channel ID is required',
-      };
-    }
-
-    if (!input.videoId) {
-      return {
-        isValid: false,
-        message: 'Video ID is required',
-      };
-    }
-
-    return {
-      isValid: true,
-      validatedInput: input,
     };
   },
 });

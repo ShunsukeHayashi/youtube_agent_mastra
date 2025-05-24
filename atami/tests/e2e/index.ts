@@ -16,7 +16,11 @@ const workflows = [
   'analytics',
   'channelConcept',
   'inputCollection',
-  'thumbnailTitleGenerator'
+  'thumbnailTitleGenerator',
+  'agent', // 新しく追加したエージェントのE2Eテスト（構文エラーを修正したので有効化）
+  'agent-ui', // 新しく追加したエージェントUIのE2Eテスト
+  'prompt-template', // 新しく追加したプロンプトテンプレートのE2Eテスト
+  'videoScriptGenerator' // 新しく追加した動画スクリプト生成ワークフローのE2Eテスト
 ];
 
 // 色付きログ出力用の関数
@@ -35,23 +39,23 @@ const log = {
 async function runTest(workflow: string): Promise<boolean> {
   return new Promise((resolve) => {
     log.info(`\n========== ${workflow} ワークフローのE2Eテスト開始 ==========`);
-    
+
     const testFile = path.join(__dirname, `${workflow}.e2e.test.ts`);
-    
+
     // テストファイルの存在確認
     if (!fs.existsSync(testFile)) {
       log.warning(`${workflow}.e2e.test.ts が見つかりません。スキップします。`);
       resolve(true);
       return;
     }
-    
+
     // Jestを使用してテストを実行
     const jest = spawn('npx', ['jest', '--testMatch', `**/${workflow}.e2e.test.ts`, '--verbose'], {
       stdio: 'inherit',
       shell: true,
       cwd: path.resolve(__dirname, '../..')
     });
-    
+
     jest.on('close', (code) => {
       if (code === 0) {
         log.success(`${workflow} ワークフローのE2Eテスト成功`);
@@ -69,16 +73,16 @@ async function runTest(workflow: string): Promise<boolean> {
  */
 async function runAllTests() {
   log.info('E2Eテスト開始');
-  
+
   let allPassed = true;
   const results: Record<string, boolean> = {};
-  
+
   for (const workflow of workflows) {
     const passed = await runTest(workflow);
     results[workflow] = passed;
     if (!passed) allPassed = false;
   }
-  
+
   // 結果サマリーを表示
   log.info('\n========== E2Eテスト結果サマリー ==========');
   for (const [workflow, passed] of Object.entries(results)) {
@@ -88,7 +92,7 @@ async function runAllTests() {
       log.error(`❌ ${workflow}: 失敗`);
     }
   }
-  
+
   if (allPassed) {
     log.success('\nすべてのE2Eテストが成功しました！');
     process.exit(0);

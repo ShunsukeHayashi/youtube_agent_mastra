@@ -3,7 +3,7 @@
 import { z } from 'zod';
 import { createStep } from '@mastra/core';
 import { createWorkflow } from '@mastra/core/workflows';
-import { anthropic } from '@ai-sdk/anthropic';
+import { openai } from '@ai-sdk/openai';
 import { Agent } from '@mastra/core/agent';
 import { Memory } from '@mastra/memory';
 import { LibSQLStore } from '@mastra/libsql';
@@ -11,7 +11,7 @@ import fs from 'fs';
 import path from 'path';
 
 // LLMの設定
-const llm = anthropic('claude-3-7-sonnet-20250219');
+const llm = openai('gpt-4o');
 
 // プロンプトファイルの読み込み関数
 function loadPromptFile(filePath: string): string {

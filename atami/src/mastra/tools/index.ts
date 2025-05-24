@@ -93,6 +93,7 @@ export { youtubeChannelConceptTool } from './channelConcept';
 export { youtubeThumbnailTitleGeneratorTool } from './thumbnailTitleGenerator';
 export { youtubeVideoPlanningTool } from './videoPlanningSeo';
 export { keywordResearchTool } from './keywordResearch';
+export { youtubeVideoScriptGeneratorTool } from './videoScriptGenerator';
 
 export const youtubeChannelPlannerTool = createTool({
   id: 'youtube-channel-planner',
@@ -149,23 +150,23 @@ export const youtubeChannelPlannerTool = createTool({
 const searchYoutube = async (query: string, maxResults: number = 5, type: string = 'video') => {
   // Check for API key
   const apiKey = process.env.YOUTUBE_API_KEY;
-  
+
   if (!apiKey) {
     throw new Error('YouTube API key not found. Please set the YOUTUBE_API_KEY environment variable.');
   }
-  
+
   try {
     console.log(`Searching YouTube for "${query}" (${type}), max results: ${maxResults}`);
-    
+
     const url = new URL('https://www.googleapis.com/youtube/v3/search');
     url.searchParams.append('part', 'snippet');
     url.searchParams.append('q', query);
     url.searchParams.append('maxResults', maxResults.toString());
     url.searchParams.append('key', apiKey);
     url.searchParams.append('type', type);
-    
+
     const response = await fetch(url.toString());
-    
+
     if (!response.ok) {
       let errorMessage = `YouTube API error: Status ${response.status}`;
       try {
@@ -176,22 +177,22 @@ const searchYoutube = async (query: string, maxResults: number = 5, type: string
       }
       throw new Error(errorMessage);
     }
-    
+
     const data = await response.json() as YouTubeSearchResponse;
     console.log(`YouTube search successful, found ${data.items?.length || 0} results`);
-    
+
     if (!data.items || data.items.length === 0) {
       return {
         results: [],
         totalResults: 0,
       };
     }
-    
+
     return {
       results: data.items.map(item => {
         const id = item.id.videoId || item.id.channelId || item.id.playlistId || '';
         let url = '';
-        
+
         if (item.id.videoId) {
           url = `https://www.youtube.com/watch?v=${item.id.videoId}`;
         } else if (item.id.channelId) {
@@ -199,7 +200,7 @@ const searchYoutube = async (query: string, maxResults: number = 5, type: string
         } else if (item.id.playlistId) {
           url = `https://www.youtube.com/playlist?list=${item.id.playlistId}`;
         }
-        
+
         return {
           id,
           title: item.snippet.title,
@@ -229,33 +230,33 @@ const planYouTubeChannel = async (
 ) => {
   // Check for API keys
   const keywordApiKey = process.env.KEYWORD_RESEARCH_API_KEY;
-  
+
   if (!keywordApiKey) {
     throw new Error('Keyword research API key not found. Please set the KEYWORD_RESEARCH_API_KEY environment variable.');
   }
-  
+
   try {
     // This is where you would integrate with a real keyword research API
     // For example, using a service like SEMrush, Ahrefs, or Google Keyword Planner
-    
+
     // 1. Call keyword research API to get keyword data
     const keywordResearchUrl = new URL('https://api.keywordresearch.example/v1/keywords');
     keywordResearchUrl.searchParams.append('query', productDescription);
     keywordResearchUrl.searchParams.append('industry', industryCategory || '');
     keywordResearchUrl.searchParams.append('key', keywordApiKey);
-    
+
     // This would be replaced with an actual API call
     // const keywordResponse = await fetch(keywordResearchUrl.toString());
     // const keywordData = await keywordResponse.json();
-    
+
     // 2. Call audience analysis API to get persona data
     // const audienceApiKey = process.env.AUDIENCE_ANALYSIS_API_KEY;
     // const audienceUrl = new URL('https://api.audienceanalysis.example/v1/personas');
     // ...
-    
+
     // Since we don't have actual API access in this example, we'll return a structured response
     // that matches our schema but indicates it needs real API integration
-    
+
     return {
       keywordResearch: [
         {
