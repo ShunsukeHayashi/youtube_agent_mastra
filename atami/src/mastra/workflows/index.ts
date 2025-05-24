@@ -24,6 +24,8 @@ export { youtubeLongFormConversationWorkflow } from './longFormConversationWorkf
 export { youtubeContentScoringWorkflow } from './contentScoringWorkflow';
 export { youtubeShortsIdeationWorkflow } from './shortsIdeationWorkflow';
 export { youtubeShortsScriptWorkflow } from './shortsScriptWorkflow';
+export { workflowLongformOsaru } from './workflow-longform-osaru';
+export { workflowLongformMoezo } from './workflow-longform-moezo';
 
 const youtubeChannelPlannerWorkflow = createWorkflow({
   id: 'youtube-channel-planner-workflow',
