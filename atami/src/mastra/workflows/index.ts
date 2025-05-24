@@ -38,6 +38,7 @@ export { youtubeLongFormConversationWorkflow } from './longFormConversationWorkf
 export { youtubeContentScoringWorkflow } from './contentScoringWorkflow';
 export { youtubeShortsIdeationWorkflow } from './shortsIdeationWorkflow';          // ← 名前を統一
 export { youtubeShortsScriptWorkflow } from './shortsScriptWorkflow';
+export { youtubeSearchWorkflow } from './youtubeSearchWorkflow';
 export { workflowLongformOsaru } from './workflow-longform-osaru';
 export { workflowLongformMoezo } from './workflow-longform-moezo';
 

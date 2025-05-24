@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { openai } from '@ai-sdk/openai';
 import { Agent } from '@mastra/core/agent';
 import { createStep } from '@mastra/core';
@@ -6,12 +5,12 @@ import { createWorkflow } from '@mastra/core/workflows';
 import { z } from 'zod';
 
 /* ------------------------------------------------------------------ *
- *  0. 共有リソース
+ * 0. 共有リソース
  * ------------------------------------------------------------------ */
 const llm = openai('gpt-4o');
 
 /* ------------------------------------------------------------------ *
- *  1. ステップ定義
+ * 1. ステップ定義
  * ------------------------------------------------------------------ */
 
 /** 1-a. 入力検証 */
@@ -54,19 +53,19 @@ const analyzeContentStep = createStep({
     contentAnalysis: z.any(),
   }),
   execute: async ({ input }) => {
-    const v = input.validatedInput;
+    const { validatedInput } = input;
 
     const analysisAgent = new Agent({
       name: 'Content Analysis Expert',
       model: llm,
-      instructions: 'あなたはYouTubeコンテンツの分析専門家です。…（省略）',
+      instructions: 'あなたは YouTube コンテンツの分析専門家です。',
     });
 
-    const analysis = await analysisAgent.execute(
-      `## 分析対象URL\n${v.contentUrl}\n## タイプ\n${v.contentType}\n…`
+    // TODO: 実装時は analysisAgent から得た文字列をパース
+    await analysisAgent.execute(
+      `## 分析対象URL\n${validatedInput.contentUrl}\n## タイプ\n${validatedInput.contentType}`
     );
 
-    /* ここではダミー結果を返す。実装時は analysis をパース */
     return {
       contentAnalysis: {
         overallImpression: '良好',
@@ -99,14 +98,13 @@ const generateFeedbackStep = createStep({
     const feedbackAgent = new Agent({
       name: 'Feedback Expert',
       model: llm,
-      instructions: 'あなたは改善提案の専門家です。…（省略）',
+      instructions: 'あなたは改善提案の専門家です。',
     });
 
-    const feedback = await feedbackAgent.execute(
+    await feedbackAgent.execute(
       `## 分析結果\n${JSON.stringify(input.contentAnalysis, null, 2)}`
     );
 
-    /* ダミー生成 */
     return {
       feedback: {
         overallScore: 7.0,
@@ -156,8 +154,8 @@ const generateScoringReportStep = createStep({
           topStrengths: feedback.topStrengths,
           topWeaknesses: feedback.topWeaknesses,
         },
-        detailedAnalysis: {},          // 省略
-        improvementPlan: {},           // 省略
+        detailedAnalysis: {},
+        improvementPlan: {},
         conclusionAndNextSteps: '次の動画では CTA を明確にしましょう',
       },
     };
@@ -165,12 +163,12 @@ const generateScoringReportStep = createStep({
 });
 
 /* ------------------------------------------------------------------ *
- *  2. ワークフロー定義
+ * 2. ワークフロー定義
  * ------------------------------------------------------------------ */
-const youtubeContentScoringWorkflow = createWorkflow({
+export const youtubeContentScoringWorkflow = createWorkflow({
   id: 'youtube-content-scoring-workflow',
-  description: 'YouTubeコンテンツの品質評価とフィードバックを提供するワークフロー',
-  inputSchema: validateContentScoringInputStep.inputSchema,   // 入口は「生」の入力
+  description: 'YouTube コンテンツの品質評価とフィードバックを提供するワークフロー',
+  inputSchema: validateContentScoringInputStep.inputSchema,
   outputSchema: z.object({
     success: z.boolean(),
     message: z.string(),
@@ -182,17 +180,15 @@ const youtubeContentScoringWorkflow = createWorkflow({
   .then(validateContentScoringInputStep)
   .then(analyzeContentStep)
   .then(generateFeedbackStep)
-  .then(generateScoringReportStep);
+  .then(generateScoringReportStep)
+  .commit(); // ★ commit をチェーンの最後に 1 回だけ呼び出す
 
 /* ------------------------------------------------------------------ *
- * 3. commit & export
+ * 3. 必要な個別エクスポート
  * ------------------------------------------------------------------ */
-youtubeContentScoringWorkflow.commit();
-
-export { 
-  youtubeContentScoringWorkflow,
+export {
   validateContentScoringInputStep,
   analyzeContentStep,
   generateFeedbackStep,
-  generateScoringReportStep 
+  generateScoringReportStep,
 };
