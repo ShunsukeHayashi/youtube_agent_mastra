@@ -23,6 +23,7 @@ export { youtubeLongFormConversationWorkflow } from './longFormConversationWorkf
 export { youtubeContentScoringWorkflow } from './contentScoringWorkflow';
 export { youtubeShortsIdeationWorkflow } from './shortsIdeationWorkflow';
 export { youtubeShortsScriptWorkflow } from './shortsScriptWorkflow';
+export { youtubeTitleWithScoreWorkflow } from './youtubeTitleWithScoreWorkflow';
 
 // ダミーワークフロー（vNext形式で定義）
 const youtubeSearchWorkflow = createWorkflow({

@@ -17,7 +17,8 @@ import {
   youtubeVideoPlanningWorkflow,
   keywordResearchWorkflow,
   youtubeChannelConceptDesignWorkflow,
-  youtubeKeywordStrategyWorkflow
+  youtubeKeywordStrategyWorkflow,
+  youtubeTitleWithScoreWorkflow
 } from './workflows';
 import {
   youtubeAgent,
@@ -42,7 +43,8 @@ export const mastra = new Mastra({
     youtubeVideoPlanningWorkflow,
     keywordResearchWorkflow,
     youtubeChannelConceptDesignWorkflow,
-    youtubeKeywordStrategyWorkflow
+    youtubeKeywordStrategyWorkflow,
+    youtubeTitleWithScoreWorkflow
   },
   agents: {
     youtubeAgent,
