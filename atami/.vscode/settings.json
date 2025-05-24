@@ -1,0 +1,80 @@
+{
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  },
+  "jest.pathToJest": "npm run test --",
+  "jest.autoRun": {
+    "watch": false,
+    "onSave": "test-file"
+  },
+  "jest.testExplorer": {
+    "enabled": true
+  },
+  "terminal.integrated.cwd": "C:/Users/shuns/Dev/youtube_agent_mastra/atami",
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/.mastra": true
+  },
+  "files.exclude": {
+    "**/.git": true,
+    "**/.DS_Store": true,
+    "**/node_modules": false,
+    "**/dist": false
+  },
+  "workbench.colorCustomizations": {
+    "statusBar.background": "#007acc",
+    "statusBar.foreground": "#ffffff"
+  },
+  "workbench.startupEditor": "none",
+  "workbench.editor.enablePreview": false,
+  "workbench.editor.enablePreviewFromQuickOpen": false,
+  "workbench.editor.showTabs": true,
+  "workbench.editor.tabSizing": "shrink",
+  "workbench.editor.tabCloseButton": "right",
+  "workbench.editor.openPositioning": "right",
+  "workbench.editor.focusRecentEditorAfterClose": true,
+  "workbench.editor.highlightModifiedTabs": true,
+  "workbench.editor.labelFormat": "default",
+  "workbench.editor.revealIfOpen": true,
+  "workbench.editor.swipeToNavigate": true,
+  "workbench.editor.tabSizingFixedMinWidth": 100,
+  "workbench.editor.tabSizingFixedMaxWidth": 200,
+  "workbench.editor.untitled.labelFormat": "content",
+  "workbench.editor.wrapTabs": false,
+  "workbench.editor.closeEmptyGroups": true,
+  "workbench.editor.closeOnFileDelete": false,
+  "workbench.editor.enablePreviewFromCodeNavigation": false,
+  "workbench.editor.mouseBackForwardToNavigate": true,
+  "workbench.editor.restoreViewState": true,
+  "workbench.editor.showIcons": true,
+  "workbench.editor.splitInGroupLayout": "horizontal",
+  "workbench.editor.splitSizing": "distribute",
+  "workbench.editor.titleScrollbarSizing": "default",
+  "workbench.editor.untitled.hint": "text",
+  "workbench.editor.decorations.badges": true,
+  "workbench.editor.decorations.colors": true,
+  "workbench.editor.enablePreviewFromQuickOpen": false,
+  "workbench.editor.enablePreview": false,
+  "workbench.editor.openSideBySideDirection": "right",
+  "workbench.editor.revealIfOpen": true,
+  "workbench.editor.showTabs": true,
+  "workbench.editor.tabCloseButton": "right",
+  "workbench.editor.tabSizing": "shrink",
+  "workbench.editor.untitled.labelFormat": "content",
+  "workbench.editor.wrapTabs": false,
+  "workbench.editor.closeEmptyGroups": true,
+  "workbench.editor.closeOnFileDelete": false,
+  "workbench.editor.enablePreviewFromCodeNavigation": false,
+  "workbench.editor.mouseBackForwardToNavigate": true,
+  "workbench.editor.restoreViewState": true,
+  "workbench.editor.showIcons": true,
+  "workbench.editor.splitInGroupLayout": "horizontal",
+  "workbench.editor.splitSizing": "distribute",
+  "workbench.editor.titleScrollbarSizing": "default",
+  "workbench.editor.untitled.hint": "text",
+  "workbench.editor.decorations.badges": true,
+  "workbench.editor.decorations.colors": true
+}
