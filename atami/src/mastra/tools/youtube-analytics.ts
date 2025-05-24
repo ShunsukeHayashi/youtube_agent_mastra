@@ -315,8 +315,33 @@ export const getVideoAnalytics = createTool({
         retentionRate?: number;
         subscribersGained?: number;
       } {
-        // Implementation will be here
-        return {};
+        try {
+          if (!rows || rows.length === 0) {
+            return {};
+          }
+
+          const retentionRate = headers.includes('averageViewPercentage')
+            ? rows.reduce(
+                (sum, row) => sum + Number(row.averageViewPercentage || 0),
+                0
+              ) / Math.max(1, rows.length)
+            : undefined;
+
+          const subscribersGained = headers.includes('subscribersGained')
+            ? rows.reduce(
+                (sum, row) => sum + Number(row.subscribersGained || 0),
+                0
+              )
+            : undefined;
+
+          return {
+            ...(retentionRate !== undefined ? { retentionRate } : {}),
+            ...(subscribersGained !== undefined ? { subscribersGained } : {}),
+          };
+        } catch (error) {
+          console.error('Error calculating video-specific summary:', error);
+          return {};
+        }
       }
       
       // Calculate additional video-specific metrics
