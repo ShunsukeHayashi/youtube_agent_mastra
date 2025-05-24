@@ -92,8 +92,8 @@ export { youtubeChannelConceptTool } from './channelConcept';
 export { youtubeThumbnailTitleGeneratorTool } from './thumbnailTitleGenerator';
 export { youtubeVideoPlanningTool } from './videoPlanningSeo';
 export { keywordResearchTool } from './keywordResearch';
-export { youtubeVideoScriptGeneratorTool } from './videoScriptGenerator';      // ← HEAD 側
-export { fetchYoutubeAnalyticsTool } from './fetchYoutubeAnalytics';           // ← remote 側
+export { youtubeVideoScriptGeneratorTool } from './videoScriptGenerator';
+export { fetchYoutubeAnalyticsTool } from './fetchYoutubeAnalytics';
 
 /* ------------------------------------------------------------------ */
 /*  チャンネルプランナー・ツール                                       */
@@ -246,7 +246,7 @@ const planYouTubeChannel = async (
         interests: ['Brand development', 'Content marketing', 'Analytics'],
         painPoints: ['ROI measurement', 'Resource allocation', 'Content quality'],
         goals: ['Increase brand awareness', 'Generate leads', 'Build community'],
-        channelUseCase: 'Seeking to establish company’s YouTube presence',
+        channelUseCase: "Seeking to establish company's YouTube presence",
         keywordRelevance: 'content creation',
       },
     ],
