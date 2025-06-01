@@ -1,7 +1,7 @@
 /**
- * 入力収集ワークフローのE2Eテスト
+ * Input Collection Workflow E2E Test
  */
-import { inputCollectionWorkflow } from '../../src/mastra/workflows/inputCollectionWorkflow';
+import { youtubeInputCollectionWorkflow } from '../../src/mastra/workflows/inputCollectionWorkflow';
 import { waitForWorkflowCompletion, mockInputs } from './setup';
 
 describe('入力収集ワークフロー E2Eテスト', () => {
@@ -22,7 +22,7 @@ describe('入力収集ワークフロー E2Eテスト', () => {
     
     // ワークフローを実行
     const result = await waitForWorkflowCompletion(
-      inputCollectionWorkflow.run(input)
+      youtubeInputCollectionWorkflow.run(input)
     );
     
     // 結果の検証
@@ -65,7 +65,7 @@ describe('入力収集ワークフロー E2Eテスト', () => {
     
     // ワークフローを実行
     const result = await waitForWorkflowCompletion(
-      inputCollectionWorkflow.run(input)
+      youtubeInputCollectionWorkflow.run(input)
     );
     
     // 結果の検証
@@ -92,7 +92,7 @@ describe('入力収集ワークフロー E2Eテスト', () => {
     
     // ワークフローを実行
     const result = await waitForWorkflowCompletion(
-      inputCollectionWorkflow.run(input)
+      youtubeInputCollectionWorkflow.run(input)
     );
     
     // エラー結果の検証

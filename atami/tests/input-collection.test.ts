@@ -32,7 +32,7 @@ jest.mock('../src/mastra/tools/inputCollection', () => ({
 
 // エージェントとワークフローをモック化
 jest.mock('../src/mastra/agents/inputCollectionAgent', () => ({
-  inputCollectionAgent: {
+  youtubeInputCollectionAgent: {
     name: 'YouTube Input Collection Agent',
     instructions: 'Test instructions'
   }
@@ -54,7 +54,7 @@ jest.mock('../src/mastra/workflows/inputCollectionWorkflow', () => {
   });
   
   return {
-    inputCollectionWorkflow: {
+    youtubeInputCollectionWorkflow: {
       id: 'youtube-input-collection-workflow',
       name: 'YouTube Input Collection Workflow',
       description: 'Collect initial input for YouTube channel operation',
@@ -64,8 +64,8 @@ jest.mock('../src/mastra/workflows/inputCollectionWorkflow', () => {
 });
 
 import { youtubeInputCollectionTool } from '../src/mastra/tools/inputCollection';
-import { inputCollectionAgent } from '../src/mastra/agents/inputCollectionAgent';
-import { inputCollectionWorkflow } from '../src/mastra/workflows/inputCollectionWorkflow';
+import { youtubeInputCollectionAgent } from '../src/mastra/agents/inputCollectionAgent';
+import { youtubeInputCollectionWorkflow } from '../src/mastra/workflows/inputCollectionWorkflow';
 
 describe('YouTube Input Collection Tests', () => {
   // 各テスト前にモックをリセット
@@ -144,24 +144,24 @@ describe('YouTube Input Collection Tests', () => {
   });
 
   // エージェント（Agent）のテスト
-  describe('inputCollectionAgent', () => {
+  describe('youtubeInputCollectionAgent', () => {
     it('should be defined', () => {
-      expect(inputCollectionAgent).toBeDefined();
-      expect(inputCollectionAgent.name).toBe('YouTube Input Collection Agent');
+      expect(youtubeInputCollectionAgent).toBeDefined();
+      expect(youtubeInputCollectionAgent.name).toBe('YouTube Input Collection Agent');
     });
   });
 
   // ワークフロー（Workflow）のテスト
-  describe('inputCollectionWorkflow', () => {
+  describe('youtubeInputCollectionWorkflow', () => {
     it('should be defined', () => {
-      expect(inputCollectionWorkflow).toBeDefined();
-      expect(inputCollectionWorkflow.id).toBe('youtube-input-collection-workflow');
-      expect(inputCollectionWorkflow.name).toBe('YouTube Input Collection Workflow');
+      expect(youtubeInputCollectionWorkflow).toBeDefined();
+      expect(youtubeInputCollectionWorkflow.id).toBe('youtube-input-collection-workflow');
+      expect(youtubeInputCollectionWorkflow.name).toBe('YouTube Input Collection Workflow');
     });
 
     it('should run successfully', async () => {
       // ワークフローを実行
-      const result = await inputCollectionWorkflow.run({
+      const result = await youtubeInputCollectionWorkflow.run({
         businessName: 'テスト事業者',
         presenterName: 'テスト演者',
         youtubeGoal: '認知拡大',
