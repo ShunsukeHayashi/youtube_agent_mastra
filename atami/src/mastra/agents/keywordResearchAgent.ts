@@ -1,11 +1,18 @@
-// APIキーは.envファイルで管理します
-import { anthropic } from '@ai-sdk/anthropic';
+import { openai } from '@ai-sdk/openai';
 import { Agent } from '@mastra/core/agent';
 import { Memory } from '@mastra/memory';
 import { LibSQLStore } from '@mastra/libsql';
-import { keywordResearchTool } from '../tools/keywordResearch';
+import { youtubeKeywordResearchTool } from '../tools/keywordResearch';
 
-export const keywordResearchAgent = new Agent({
+/**
+ * YouTube Keyword Research Agent
+ * 
+ * Specializes in YouTube keyword research and search optimization, identifying
+ * high-volume related keywords based on user-provided keywords or topics,
+ * analyzing search trends, and proposing strategic keyword recommendations
+ * for YouTube video SEO optimization.
+ */
+export const youtubeKeywordResearchAgent = new Agent({
   name: 'YouTube Keyword Research Specialist',
   instructions: `
   あなたはYouTubeのキーワードリサーチと検索最適化を専門とするSEOエキスパートです。
@@ -64,8 +71,8 @@ export const keywordResearchAgent = new Agent({
   
   注意: APIキーが設定されていない場合は、モックデータが使用されます。その場合は、データが実際の検索ボリュームを反映していない可能性があることを明記してください。
   `,
-  model: anthropic('claude-3-7-sonnet-20250219'),
-  tools: { keywordResearchTool },
+  model: openai('gpt-4o'),
+  tools: { youtubeKeywordResearchTool },
   memory: new Memory({
     storage: new LibSQLStore({
       url: 'file:../mastra.db', // path is relative to the .mastra/output directory

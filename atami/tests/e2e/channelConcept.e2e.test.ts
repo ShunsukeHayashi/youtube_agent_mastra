@@ -39,7 +39,7 @@ describe('チャンネルコンセプトワークフロー E2Eテスト', () => 
     
     // ワークフローを実行
     const result = await waitForWorkflowCompletion(
-      youtubeChannelConceptWorkflow.run(input)
+      youtubeChannelConceptWorkflow.runs(input)
     );
     
     // エラー結果の検証

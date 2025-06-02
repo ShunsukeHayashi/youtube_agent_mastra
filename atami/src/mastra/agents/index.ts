@@ -1,10 +1,13 @@
-import { anthropic } from '@ai-sdk/anthropic';
+import { openai } from '@ai-sdk/openai';
 import { Agent } from '@mastra/core/agent';
-import { Memory } from '@mastra/memory';
-import { LibSQLStore } from '@mastra/libsql';
 import { youtubeSearchTool, youtubeChannelPlannerTool } from '../tools';
+import { createStandardMemory } from '../lib/memoryConfig';
 
-export const youtubeAgent = new Agent({
+/**
+ * Collection of YouTube-specific agents for various content creation and channel management tasks
+ */
+
+export const youtubeSearchAgent = new Agent({
   name: 'YouTube Search Agent',
   instructions: `
       You are a helpful YouTube assistant that helps users find videos on YouTube.
@@ -19,29 +22,19 @@ export const youtubeAgent = new Agent({
       
       Use the youtubeSearchTool to search for videos, channels, or playlists.
   `,
-  model: anthropic('claude-3-7-sonnet-20250219'),
+  model: openai('gpt-4o'),
   tools: { youtubeSearchTool },
-  memory: new Memory({
-    storage: new LibSQLStore({
-      url: 'file:../mastra.db', // path is relative to the .mastra/output directory
-    }),
-    options: {
-      lastMessages: 10,
-      semanticRecall: false,
-      threads: {
-        generateTitle: false,
-      },
-    },
-  }),
+  memory: createStandardMemory(),
 });
 
 export { youtubeTitleGeneratorAgent } from './titleGeneratorAgent';
 export { youtubeAnalyticsAgent } from './analyticsAgent';
-export { inputCollectionAgent } from './inputCollectionAgent';
-export { channelConceptAgent } from './channelConceptAgent';
+export { youtubeInputCollectionAgent } from './inputCollectionAgent';
+export { youtubeChannelConceptAgent } from './channelConceptAgent';
 export { youtubeThumbnailTitleGeneratorAgent } from './thumbnailTitleGeneratorAgent';
 export { youtubeVideoPlanningAgent } from './videoPlanningAgent';
-export { keywordResearchAgent } from './keywordResearchAgent';
+export { youtubeKeywordResearchAgent } from './keywordResearchAgent';
+export { youtubeOrchestratorAgent, youtubeOrchestratorTools } from './orchestratorAgent';
 
 export const youtubeChannelPlannerAgent = new Agent({
   name: 'YouTube Channel Planning Agent',
@@ -68,18 +61,7 @@ export const youtubeChannelPlannerAgent = new Agent({
       
       Present your final recommendations in a well-structured format with clear sections and numbered lists for easy reference.
   `,
-  model: anthropic('claude-3-7-sonnet-20250219'),
+  model: openai('gpt-4o'),
   tools: { youtubeChannelPlannerTool },
-  memory: new Memory({
-    storage: new LibSQLStore({
-      url: 'file:../mastra.db', // path is relative to the .mastra/output directory
-    }),
-    options: {
-      lastMessages: 10,
-      semanticRecall: false,
-      threads: {
-        generateTitle: false,
-      },
-    },
-  }),
+  memory: createStandardMemory(),
 });

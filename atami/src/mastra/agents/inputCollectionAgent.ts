@@ -1,10 +1,17 @@
-import { anthropic } from '@ai-sdk/anthropic';
+import { openai } from '@ai-sdk/openai';
 import { Agent } from '@mastra/core/agent';
 import { Memory } from '@mastra/memory';
 import { LibSQLStore } from '@mastra/libsql';
 import { youtubeInputCollectionTool } from '../tools/inputCollection';
 
-export const inputCollectionAgent = new Agent({
+/**
+ * YouTube Input Collection Agent
+ * 
+ * Responsible for collecting initial input information for YouTube channel operations,
+ * including business name, performer name, service URL, YouTube operation purpose,
+ * performer background, and experience.
+ */
+export const youtubeInputCollectionAgent = new Agent({
   name: 'YouTube Input Collection Agent',
   instructions: `
   あなたはYouTubeチャンネル運用のための初期インプット収集を担当するエージェントです。
@@ -42,7 +49,7 @@ export const inputCollectionAgent = new Agent({
   
   youtubeInputCollectionToolを使用して、ユーザーから収集した情報を処理し、適切なワークフローを推奨してください。
   `,
-  model: anthropic('claude-3-7-sonnet-20250219'),
+  model: openai('gpt-4o'),
   tools: { youtubeInputCollectionTool },
   memory: new Memory({
     storage: new LibSQLStore({

@@ -1,4 +1,4 @@
-import { anthropic } from '@ai-sdk/anthropic';
+import { openai } from '@ai-sdk/openai';
 import { Agent } from '@mastra/core/agent';
 import { Memory } from '@mastra/memory';
 import { LibSQLStore } from '@mastra/libsql';
@@ -44,7 +44,7 @@ export const youtubeAnalyticsAgent = new Agent({
       - APIで取得できるデータのみを扱う
       - データに基づかない推測をする場合は明示する
   `,
-  model: anthropic('claude-3-7-sonnet-20250219'),
+  model: openai('gpt-4o'),
   tools: { 
     getChannelAnalytics,
     getVideoAnalytics,

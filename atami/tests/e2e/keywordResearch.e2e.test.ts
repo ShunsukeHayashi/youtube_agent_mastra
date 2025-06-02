@@ -1,7 +1,7 @@
 /**
- * キーワードリサーチワークフローのE2Eテスト
+ * Keyword Research Workflow E2E Test
  */
-import { keywordResearchWorkflow } from '../../src/mastra/workflows/keywordResearchWorkflow';
+import { youtubeKeywordResearchWorkflow } from '../../src/mastra/workflows/keywordResearchWorkflow';
 import { waitForWorkflowCompletion, mockInputs } from './setup';
 
 describe('キーワードリサーチワークフロー E2Eテスト', () => {

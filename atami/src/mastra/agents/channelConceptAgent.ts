@@ -1,10 +1,18 @@
-import { anthropic } from '@ai-sdk/anthropic';
+import { openai } from '@ai-sdk/openai';
 import { Agent } from '@mastra/core/agent';
 import { Memory } from '@mastra/memory';
 import { LibSQLStore } from '@mastra/libsql';
 import { youtubeChannelConceptTool } from '../tools/channelConcept';
 
-export const channelConceptAgent = new Agent({
+/**
+ * YouTube Channel Concept Agent
+ * 
+ * Specializes in designing YouTube channel concepts by analyzing product information,
+ * target attributes, service URLs, and other data to generate effective YouTube channel
+ * concept proposals with channel titles, value propositions, target personas, goals,
+ * SEO keywords, and video content examples.
+ */
+export const youtubeChannelConceptAgent = new Agent({
   name: 'YouTube Channel Concept Designer',
   instructions: `
   あなたはYouTubeチャンネルのコンセプト設計を専門とする戦略コンサルタントです。
@@ -77,7 +85,7 @@ export const channelConceptAgent = new Agent({
 
   youtubeChannelConceptToolを使用して、提供された情報を分析し、データに基づいた戦略的なチャンネルコンセプト提案を生成してください。
   `,
-  model: anthropic('claude-3-7-sonnet-20250219'),
+  model: openai('gpt-4o'),
   tools: { youtubeChannelConceptTool },
   memory: new Memory({
     storage: new LibSQLStore({
