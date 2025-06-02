@@ -1,4 +1,4 @@
-import { anthropic } from '@ai-sdk/anthropic';
+import { openai } from '@ai-sdk/openai';
 import { Agent } from '@mastra/core/agent';
 import { Memory } from '@mastra/memory';
 import { LibSQLStore } from '@mastra/libsql';
@@ -83,7 +83,7 @@ export const youtubeVideoPlanningAgent = new Agent({
 
   youtubeVideoPlanningToolを使用して、提供された情報を分析し、データに基づいた戦略的な動画企画と最適化プランを生成してください。
   `,
-  model: anthropic('claude-3-7-sonnet-20250219'),
+  model: openai('gpt-4o'),
   tools: { youtubeVideoPlanningTool },
   memory: new Memory({
     storage: new LibSQLStore({

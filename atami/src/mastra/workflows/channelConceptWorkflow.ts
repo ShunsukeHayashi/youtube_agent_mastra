@@ -3,7 +3,7 @@ import { anthropic } from '@ai-sdk/anthropic';
 import { createStep } from '@mastra/core';
 import { createWorkflow } from '@mastra/core/workflows';
 import { z } from 'zod';
-import { channelConceptAgent } from '../agents/channelConceptAgent';
+import { youtubeChannelConceptAgent } from '../agents/channelConceptAgent';
 import { youtubeChannelConceptTool } from '../tools/channelConcept';
 
 const llm = anthropic('claude-3-7-sonnet-20250219');
@@ -72,7 +72,7 @@ const presentConceptProposals = createStep({
       ${JSON.stringify(conceptResults, null, 2)}
     `;
 
-    const response = await channelConceptAgent.stream([
+    const response = await youtubeChannelConceptAgent.stream([
       {
         role: 'user',
         content: prompt,

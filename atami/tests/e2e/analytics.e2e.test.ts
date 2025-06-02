@@ -37,7 +37,7 @@ describe('アナリティクスワークフロー E2Eテスト', () => {
     
     // ワークフローを実行
     const result = await waitForWorkflowCompletion(
-      youtubeChannelAnalyticsWorkflow.run(input)
+      youtubeChannelAnalyticsWorkflow.runs(input)
     );
     
     // エラー結果の検証

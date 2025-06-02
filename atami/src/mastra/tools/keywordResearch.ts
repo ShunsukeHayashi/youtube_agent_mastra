@@ -1,8 +1,8 @@
 /**
- * キーワードリサーチツール
+ * YouTube Keyword Research Tool
  *
- * Keyword Tool APIを使用して、キーワードの検索ボリュームや関連キーワードを取得します。
- * APIキーが設定されていない場合は、モックデータを返します。
+ * Uses the Keyword Tool API to obtain search volume and related keywords for YouTube.
+ * Returns mock data if the API key is not set.
  */
 import { createTool } from '@mastra/core/tools';
 import { z } from 'zod';
@@ -52,8 +52,8 @@ interface KeywordToolResponse {
   };
 }
 
-export const keywordResearchTool = createTool({
-  id: 'keyword-research-tool',
+export const youtubeKeywordResearchTool = createTool({
+  id: 'youtube-keyword-research-tool',
   description: 'Research keywords using Keyword Tool API to get search volume and related keywords',
   inputSchema: z.object({
     keyword: z.string().describe('The main keyword to research'),

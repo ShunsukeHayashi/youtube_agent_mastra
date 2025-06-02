@@ -1,14 +1,19 @@
-// @ts-nocheck - TypeScriptの型チェックを無効化
+/**
+ * YouTube Input Collection Workflow
+ * 
+ * Collects initial input information for YouTube channel operations.
+ */
 import { anthropic } from '@ai-sdk/anthropic';
 import { createStep } from '@mastra/core';
 import { createWorkflow } from '@mastra/core/workflows';
 import { z } from 'zod';
-import { inputCollectionAgent } from '../agents/inputCollectionAgent';
+import { youtubeInputCollectionAgent } from '../agents/inputCollectionAgent';
 import { youtubeInputCollectionTool } from '../tools/inputCollection';
+import { StepParams, YouTubeInputCollectionParams } from '../types/stepTypes';
 
 const llm = anthropic('claude-3-7-sonnet-20250219');
 
-// ステップ1: 初期インプット収集
+// Step 1: Initial input collection
 const collectInitialInput = createStep({
   id: 'collect-initial-input',
   description: 'Collect basic information for YouTube channel operation',
@@ -27,14 +32,8 @@ const collectInitialInput = createStep({
     presenterBackground: z.string(),
     recommendedWorkflows: z.array(z.string()),
   }),
-  execute: async ({ context }) => {
-    const triggerData = context?.getStepResult<{
-      businessName: string,
-      presenterName: string,
-      serviceUrl?: string,
-      youtubeGoal: string,
-      presenterBackground: string,
-    }>('trigger');
+  execute: async (params: StepParams<YouTubeInputCollectionParams>) => {
+    const triggerData = params.context.getStepResult<YouTubeInputCollectionParams>('trigger');
 
     if (!triggerData) {
       throw new Error('Trigger data not found');
@@ -52,178 +51,172 @@ const collectInitialInput = createStep({
   },
 });
 
-// ステップ2: ワークフロー推奨
+// Step 2: Workflow recommendation
 const recommendWorkflows = createStep({
   id: 'recommend-workflows',
-  description: 'Recommend appropriate workflows based on collected information',
-  inputSchema: z.object({}),
-  outputSchema: z.object({
+  description: 'Recommend appropriate workflows based on collected input',
+  inputSchema: z.object({
     businessName: z.string(),
     presenterName: z.string(),
     serviceUrl: z.string().optional(),
     youtubeGoal: z.string(),
     presenterBackground: z.string(),
     recommendedWorkflows: z.array(z.string()),
-    recommendation: z.string(),
-  }),
-  execute: async ({ context, mastra }) => {
-    const inputData = context?.getStepResult(collectInitialInput);
-
-    if (!inputData) {
-      throw new Error('Input data not found');
-    }
-
-    const prompt = `
-    ${inputData.businessName}様、${inputData.presenterName}様のYouTubeチャンネル運用について、
-    目的「${inputData.youtubeGoal}」に基づいて、以下のワークフローをおすすめします：
-    
-    ${inputData.recommendedWorkflows.map((wf, index) => `${index + 1}. ${wf}`).join('\n')}
-    
-    これらのワークフローを順番に実行することで、効果的なYouTubeチャンネル運用が可能になります。
-    どのワークフローから始めたいですか？
-    `;
-
-    const response = await inputCollectionAgent.stream([
-      {
-        role: 'user',
-        content: prompt,
-      },
-    ]);
-
-    let recommendationText = '';
-
-    for await (const chunk of response.textStream) {
-      process.stdout.write(chunk);
-      recommendationText += chunk;
-    }
-
-    return {
-      businessName: inputData.businessName,
-      presenterName: inputData.presenterName,
-      serviceUrl: inputData.serviceUrl,
-      youtubeGoal: inputData.youtubeGoal,
-      presenterBackground: inputData.presenterBackground,
-      recommendedWorkflows: inputData.recommendedWorkflows,
-      recommendation: recommendationText,
-    };
-  },
-});
-
-// ワークフローの説明を取得する関数
-function getWorkflowDescription(workflowId) {
-  const descriptions = {
-    'WORKFLOW-1': 'チャンネルのコンセプト、ターゲットオーディエンス、ポジショニングを設計します。チャンネルの方向性や差別化要素を明確にし、視聴者に一貫したメッセージを伝えるための基盤を作ります。',
-    'WORKFLOW-2': '動画のサムネイルとタイトルを最適化し、クリック率を向上させます。視聴者の心理トリガーを活用した複数のバリエーションを生成し、最も効果的な組み合わせを提案します。',
-    'WORKFLOW-3': `設計したコンセプトに基づいた具体的な動画企画と検索最適化を行います。
-
-このワークフローでは以下のプロセスを実行します：
-1. キーワードリサーチ：ターゲットオーディエンスが検索する関連キーワードを特定
-2. 競合分析：同じ領域の人気動画を分析し、差別化ポイントを見つける
-3. コンテンツ構造設計：視聴者の興味を引き、維持するための最適な動画構成を設計
-4. SEOタイトル・説明文最適化：検索エンジンでの上位表示を狙ったメタデータの作成
-5. タグ戦略：関連性の高いタグの選定と優先順位付け
-6. 視聴者維持戦略：視聴時間を延ばすためのフック、パターン中断、CTAの配置
-
-最終的に、検索結果で上位表示され、高い視聴維持率を実現する動画企画を提供します。`,
-    'WORKFLOW-4': '短尺動画（YouTube Shorts）の企画を生成し、新規視聴者の獲得を促進します。トレンドを活用した注目を集めやすいコンテンツ設計と、メインチャンネルへの誘導戦略を提案します。',
-    'WORKFLOW-6': '既存のコンテンツを評価し、改善点を特定します。視聴者維持率、エンゲージメント、コメント分析などの指標に基づいて、コンテンツの強みと弱みを分析し、具体的な改善策を提案します。',
-    'WORKFLOW-7': '長尺動画のTAIKI形式での台本を作成します。導入部の強いフック、明確な価値提供、ストーリーテリング要素を組み込んだ、視聴者の興味を最後まで維持する構成の台本を生成します。',
-    'WORKFLOW-11': '長尺動画の掛け合い形式での台本を作成します。複数の視点や役割を持つキャラクター間の対話形式で、複雑なトピックを分かりやすく伝える台本を生成します。視聴者の理解を促進し、エンゲージメントを高めます。',
-    'WORKFLOW-12': 'YouTubeでの検索上位表示を目指したキーワード戦略を立案します。検索ボリューム、競合度、関連性を分析し、短期・中期・長期的に狙うべきキーワードの優先順位と具体的な活用方法を提案します。',
-  };
-
-  return descriptions[workflowId] || 'ワークフローの説明がありません。';
-}
-
-// ワークフローの推定所要時間を取得する関数
-function getWorkflowEstimatedTime(workflowId) {
-  const times = {
-    'WORKFLOW-1': '2-3時間',
-    'WORKFLOW-2': '1-2時間',
-    'WORKFLOW-3': '3-4時間',
-    'WORKFLOW-4': '1-2時間',
-    'WORKFLOW-6': '2-3時間',
-    'WORKFLOW-7': '4-6時間',
-    'WORKFLOW-11': '4-6時間',
-    'WORKFLOW-12': '2-3時間',
-  };
-
-  return times[workflowId] || '不明';
-}
-
-// バリデーションステップ
-const validateInputCollectionInputStep = createStep({
-  id: 'validate-input-collection-input',
-  description: 'Validate input for input collection',
-  inputSchema: z.object({
-    businessName: z.string().describe('Name of the business'),
-    presenterName: z.string().describe('Name of the presenter'),
-    serviceUrl: z.string().optional().describe('URL of the service (if any)'),
-    youtubeGoal: z.string().describe('Goal of YouTube operation (e.g., acquisition, awareness, fan building)'),
-    presenterBackground: z.string().describe('Background and history of the presenter'),
   }),
   outputSchema: z.object({
-    isValid: z.boolean(),
-    message: z.string().optional(),
-    validatedInput: z.object({
-      businessName: z.string(),
-      presenterName: z.string(),
-      serviceUrl: z.string().optional(),
-      youtubeGoal: z.string(),
-      presenterBackground: z.string(),
-    }).optional(),
+    businessName: z.string(),
+    presenterName: z.string(),
+    serviceUrl: z.string().optional(),
+    youtubeGoal: z.string(),
+    presenterBackground: z.string(),
+    recommendedWorkflows: z.array(z.object({
+      id: z.string(),
+      name: z.string(),
+      description: z.string(),
+      priority: z.number(),
+    })),
+    summary: z.string(),
   }),
-  execute: async (params) => {
-    // @ts-ignore - TypeScript型定義の問題を一時的に無視
-    const context = params.context;
-    const input = context?.getStepResult('trigger');
+  execute: async (params: StepParams) => {
+    const collectResult = params.context.getStepResult<{
+      businessName: string,
+      presenterName: string,
+      serviceUrl?: string,
+      youtubeGoal: string,
+      presenterBackground: string,
+      recommendedWorkflows: string[],
+    }>('collect-initial-input');
 
-    if (!input) {
-      return {
-        isValid: false,
-        message: 'Input data not found',
-      };
+    if (!collectResult) {
+      throw new Error('Collection result not found');
     }
 
-    if (!input.businessName) {
-      return {
-        isValid: false,
-        message: 'Business name is required',
-      };
-    }
+    // Map workflow IDs to full workflow descriptions
+    const workflowMap: Record<string, { name: string, description: string }> = {
+      'WORKFLOW-1': {
+        name: 'Channel Concept Design',
+        description: 'Design YouTube channel concept and brand strategy',
+      },
+      'WORKFLOW-2': {
+        name: 'Thumbnail & Title Generator',
+        description: 'Generate optimized thumbnails and titles for videos',
+      },
+      'WORKFLOW-3': {
+        name: 'Video Planning & SEO',
+        description: 'Plan video content structure with SEO optimization',
+      },
+      'WORKFLOW-4': {
+        name: 'Shorts Ideation',
+        description: 'Generate creative ideas for YouTube Shorts content',
+      },
+      'WORKFLOW-5': {
+        name: 'Shorts Script Research & Generation',
+        description: 'Research and generate scripts for YouTube Shorts',
+      },
+      'WORKFLOW-6': {
+        name: 'Content Scoring & Feedback',
+        description: 'Score and provide feedback on existing content',
+      },
+      'WORKFLOW-7': {
+        name: 'Long-Form TAIKI',
+        description: 'Generate long-form content in TAIKI style',
+      },
+      'WORKFLOW-8': {
+        name: 'Long-Form Roadmap',
+        description: 'Create roadmap for long-form content creation',
+      },
+      'WORKFLOW-9': {
+        name: 'Long-Form OSARU',
+        description: 'Generate long-form content in OSARU style',
+      },
+      'WORKFLOW-10': {
+        name: 'Long-Form MOEZO',
+        description: 'Generate long-form content in MOEZO style',
+      },
+      'WORKFLOW-11': {
+        name: 'Long-Form Conversation',
+        description: 'Generate long-form conversation-style content',
+      },
+      'WORKFLOW-12': {
+        name: 'Keyword Strategy Simulation',
+        description: 'Simulate YouTube keyword strategy for content planning',
+      },
+      'WORKFLOW-13': {
+        name: 'Initial Input Collection',
+        description: 'Collect initial project information',
+      },
+    };
 
-    if (!input.presenterName) {
-      return {
-        isValid: false,
-        message: 'Presenter name is required',
+    // Build detailed workflow recommendations with priorities
+    const detailedRecommendations = collectResult.recommendedWorkflows.map((workflowId, index) => {
+      const workflowDetails = workflowMap[workflowId] || {
+        name: workflowId,
+        description: 'Custom workflow',
       };
-    }
 
-    if (!input.youtubeGoal) {
       return {
-        isValid: false,
-        message: 'YouTube goal is required',
+        id: workflowId,
+        name: workflowDetails.name,
+        description: workflowDetails.description,
+        priority: index + 1,
       };
-    }
+    });
 
-    if (!input.presenterBackground) {
-      return {
-        isValid: false,
-        message: 'Presenter background is required',
-      };
-    }
+    // Generate a summary
+    const promptWorkflowAgent = new Agent({
+      name: 'Workflow Recommendation Agent',
+      model: llm,
+      instructions: `
+        You are a YouTube workflow recommendation specialist.
+        Based on the provided business information and goals, explain why certain workflows
+        are recommended in a clear, concise summary.
+        
+        Your summary should:
+        1. Acknowledge the business name and presenter
+        2. Briefly mention their goal for YouTube
+        3. Explain the logical order of the recommended workflows
+        4. Provide a clear rationale for each recommendation
+        
+        Keep your response under 250 words and focus on being practical and helpful.
+      `,
+    });
+
+    const workflowDescription = detailedRecommendations
+      .map(wf => `${wf.id} (${wf.name}): ${wf.description}`)
+      .join('\n');
+
+    const summaryPrompt = `
+      Business Name: ${collectResult.businessName}
+      Presenter Name: ${collectResult.presenterName}
+      Service URL: ${collectResult.serviceUrl || 'Not provided'}
+      YouTube Goal: ${collectResult.youtubeGoal}
+      Presenter Background: ${collectResult.presenterBackground}
+      
+      Recommended Workflows (in priority order):
+      ${workflowDescription}
+      
+      Please provide a summary explaining why these workflows are recommended and how they align with the business goals.
+    `;
+
+    const summaryResult = await promptWorkflowAgent.execute(summaryPrompt);
+    const summary = summaryResult.content.toString();
 
     return {
-      isValid: true,
-      validatedInput: input,
+      businessName: collectResult.businessName,
+      presenterName: collectResult.presenterName,
+      serviceUrl: collectResult.serviceUrl,
+      youtubeGoal: collectResult.youtubeGoal,
+      presenterBackground: collectResult.presenterBackground,
+      recommendedWorkflows: detailedRecommendations,
+      summary,
     };
   },
 });
 
-// 新しいワークフロー定義
-const inputCollectionWorkflow = createWorkflow({
+// Workflow definition
+const youtubeInputCollectionWorkflow = createWorkflow({
   id: 'youtube-input-collection-workflow',
-  description: 'Collect initial input for YouTube channel operation',
+  description: 'Collect initial input information for YouTube channel operations',
   inputSchema: z.object({
     businessName: z.string().describe('Name of the business'),
     presenterName: z.string().describe('Name of the presenter'),
@@ -240,43 +233,21 @@ const inputCollectionWorkflow = createWorkflow({
       serviceUrl: z.string().optional(),
       youtubeGoal: z.string(),
       presenterBackground: z.string(),
-      recommendedWorkflows: z.array(z.string()),
-      recommendation: z.string(),
-      executionPlan: z.array(z.object({
-        step: z.number(),
-        workflowId: z.string(),
-        workflowName: z.string(),
+      recommendedWorkflows: z.array(z.object({
+        id: z.string(),
+        name: z.string(),
         description: z.string(),
-        estimatedTime: z.string(),
+        priority: z.number(),
       })),
-      report: z.object({
-        title: z.string(),
-        date: z.string(),
-        clientInfo: z.object({
-          businessName: z.string(),
-          presenterName: z.string(),
-          serviceUrl: z.string().optional(),
-          youtubeGoal: z.string(),
-          presenterBackground: z.string(),
-        }),
-        recommendedWorkflows: z.array(z.string()),
-        executionPlan: z.array(z.object({
-          step: z.number(),
-          workflowId: z.string(),
-          workflowName: z.string(),
-          description: z.string(),
-          estimatedTime: z.string(),
-        })),
-        summary: z.string(),
-      }),
+      summary: z.string(),
     }).optional(),
   }),
 })
-  .then(validateInputCollectionInputStep)
   .then(collectInitialInput)
   .then(recommendWorkflows);
 
-// ワークフローをコミット
-inputCollectionWorkflow.commit();
+// Commit the workflow
+youtubeInputCollectionWorkflow.commit();
 
-export { inputCollectionWorkflow };
+// Export
+export { youtubeInputCollectionWorkflow };

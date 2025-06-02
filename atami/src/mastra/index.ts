@@ -1,6 +1,3 @@
-
-// @ts-nocheck
-// .envファイルを読み込む
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -11,49 +8,64 @@ import {
   youtubeTitleGeneratorWorkflow,
   youtubeChannelAnalyticsWorkflow,
   youtubeVideoAnalyticsWorkflow,
-  inputCollectionWorkflow,
+  youtubeInputCollectionWorkflow,
   youtubeChannelConceptWorkflow,
   youtubeThumbnailTitleGeneratorWorkflow,
   youtubeVideoPlanningWorkflow,
-  keywordResearchWorkflow,
+  youtubeKeywordResearchWorkflow,
   youtubeChannelConceptDesignWorkflow,
   youtubeKeywordStrategyWorkflow
 } from './workflows';
 import {
-  youtubeAgent,
+  youtubeSearchAgent,
   youtubeTitleGeneratorAgent,
   youtubeAnalyticsAgent,
   youtubeChannelPlannerAgent,
-  inputCollectionAgent,
-  channelConceptAgent,
+  youtubeInputCollectionAgent,
+  youtubeChannelConceptAgent,
   youtubeThumbnailTitleGeneratorAgent,
   youtubeVideoPlanningAgent,
-  keywordResearchAgent
+  youtubeKeywordResearchAgent,
+  youtubeOrchestratorAgent
 } from './agents';
+import { 
+  youtubeLongFormContentChain,
+  youtubeShortsContentChain
+} from './chains';
+
+// Export orchestration module
+export * from './orchestration';
+
+// Export workflow chains
+export const chains = {
+  youtubeLongFormContentChain,
+  youtubeShortsContentChain
+};
 
 export const mastra = new Mastra({
   workflows: {
     youtubeTitleGeneratorWorkflow,
     youtubeChannelAnalyticsWorkflow,
     youtubeVideoAnalyticsWorkflow,
-    inputCollectionWorkflow,
+    youtubeInputCollectionWorkflow,
     youtubeChannelConceptWorkflow,
     youtubeThumbnailTitleGeneratorWorkflow,
     youtubeVideoPlanningWorkflow,
-    keywordResearchWorkflow,
+    youtubeKeywordResearchWorkflow,
     youtubeChannelConceptDesignWorkflow,
     youtubeKeywordStrategyWorkflow
   },
   agents: {
-    youtubeAgent,
+    youtubeSearchAgent,
     youtubeTitleGeneratorAgent,
     youtubeAnalyticsAgent,
     youtubeChannelPlannerAgent,
-    inputCollectionAgent,
-    channelConceptAgent,
+    youtubeInputCollectionAgent,
+    youtubeChannelConceptAgent,
     youtubeThumbnailTitleGeneratorAgent,
     youtubeVideoPlanningAgent,
-    keywordResearchAgent
+    youtubeKeywordResearchAgent,
+    youtubeOrchestratorAgent
   },
   storage: new LibSQLStore({
     // For persistent storage, use file path instead of memory

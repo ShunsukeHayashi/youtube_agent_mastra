@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { anthropic } from '@ai-sdk/anthropic';
 import { Agent } from '@mastra/core/agent';
 import { createStep } from '@mastra/core';
@@ -8,23 +7,24 @@ import { z } from 'zod';
 const llm = anthropic('claude-3-7-sonnet-20250219');
 
 /**
- * YouTube Shorts企画生成ワークフロー
- * 短尺動画の企画アイデアを生成するワークフロー
+ * YouTube Shorts Ideation Workflow
+ * 
+ * A workflow that generates ideas for short-form video content.
  */
 
-// 入力検証ステップ
+// Input validation step
 const validateShortsIdeationInputStep = createStep({
     id: 'validate-shorts-ideation-input',
     description: 'Validate the input for Shorts ideation',
     inputSchema: z.object({
-        channelConcept: z.string().describe('チャンネルのコンセプトや方向性'),
-        targetAudience: z.string().describe('ターゲットオーディエンス'),
-        contentGoals: z.array(z.string()).describe('コンテンツの目標（認知拡大、エンゲージメント向上、コンバージョンなど）'),
-        existingContent: z.string().optional().describe('既存のコンテンツや強み（オプション）'),
-        brandGuidelines: z.string().optional().describe('ブランドガイドラインや制約（オプション）'),
-        trendTopics: z.array(z.string()).optional().describe('取り入れたいトレンドトピック（オプション）'),
-        competitorChannels: z.array(z.string()).optional().describe('競合チャンネル（オプション）'),
-        ideaCount: z.number().optional().describe('生成するアイデアの数（デフォルト: 10）'),
+        channelConcept: z.string().describe('Channel concept and direction'),
+        targetAudience: z.string().describe('Target audience'),
+        contentGoals: z.array(z.string()).describe('Content goals (awareness, engagement, conversion, etc.)'),
+        existingContent: z.string().optional().describe('Existing content or strengths (optional)'),
+        brandGuidelines: z.string().optional().describe('Brand guidelines or constraints (optional)'),
+        trendTopics: z.array(z.string()).optional().describe('Trend topics to incorporate (optional)'),
+        competitorChannels: z.array(z.string()).optional().describe('Competitor channels (optional)'),
+        ideaCount: z.number().optional().describe('Number of ideas to generate (default: 10)'),
     }),
     outputSchema: z.object({
         isValid: z.boolean(),
@@ -40,31 +40,31 @@ const validateShortsIdeationInputStep = createStep({
             ideaCount: z.number(),
         }).optional(),
     }),
-    execute: async (params) => {
+    execute: async (params: { input: any; context: any }) => {
         const input = params.input;
 
         if (!input.channelConcept || input.channelConcept.trim() === '') {
             return {
                 isValid: false,
-                message: 'チャンネルのコンセプトは必須です',
+                message: 'Channel concept is required',
             };
         }
 
         if (!input.targetAudience || input.targetAudience.trim() === '') {
             return {
                 isValid: false,
-                message: 'ターゲットオーディエンスは必須です',
+                message: 'Target audience is required',
             };
         }
 
         if (!input.contentGoals || input.contentGoals.length === 0) {
             return {
                 isValid: false,
-                message: '少なくとも1つのコンテンツ目標が必要です',
+                message: 'At least one content goal is required',
             };
         }
 
-        // デフォルト値の設定
+        // Set default values
         const ideaCount = input.ideaCount || 10;
 
         return {
@@ -77,7 +77,7 @@ const validateShortsIdeationInputStep = createStep({
     },
 });
 
-// トレンド分析ステップ
+// Trend analysis step
 const analyzeTrendsStep = createStep({
     id: 'analyze-trends',
     description: 'Analyze current trends relevant to the channel concept',
@@ -109,97 +109,97 @@ const analyzeTrendsStep = createStep({
             contentOpportunities: z.array(z.string()),
         }),
     }),
-    execute: async (params) => {
+    execute: async (params: { input: any; context: any; mastra?: any }) => {
         const input = params.input.validatedInput;
 
-        // トレンド分析エージェントを使用
+        // Trend analysis agent
         const trendAgent = new Agent({
             name: 'Shorts Trend Analyst',
             model: llm,
             instructions: `
-        あなたはYouTube Shortsのトレンド分析専門家です。
-        与えられたチャンネルコンセプトとターゲットオーディエンスに基づいて、
-        関連するトレンドを分析し、コンテンツ機会を特定してください。
+        You are a YouTube Shorts trend analysis specialist.
+        Based on the given channel concept and target audience,
+        analyze relevant trends and identify content opportunities.
         
-        分析には以下の要素を含めてください：
-        1. 関連トレンド
-           - トレンド名
-           - チャンネルコンセプトとの関連性
-           - ターゲットオーディエンスへの訴求力
-           - トレンドの寿命予測
+        Include the following elements in your analysis:
+        1. Relevant trends
+           - Trend name
+           - Relevance to channel concept
+           - Appeal to target audience
+           - Predicted trend longevity
         
-        2. 競合インサイト（競合チャンネルが提供されている場合）
-           - 成功しているコンテンツ形式
-           - エンゲージメント戦術
+        2. Competitor insights (if competitor channels are provided)
+           - Successful content formats
+           - Engagement tactics
         
-        3. コンテンツ機会
-           - チャンネルコンセプト、ターゲットオーディエンス、トレンド、競合分析に基づく機会
+        3. Content opportunities
+           - Opportunities based on channel concept, target audience, trends, and competitor analysis
         
-        分析は具体的で実用的なものにし、YouTube Shortsの特性（短尺、縦型フォーマット、
-        注目を引く必要性など）を考慮してください。
+        Make your analysis specific and practical, considering YouTube Shorts characteristics
+        (short format, vertical format, need to capture attention, etc.).
       `,
         });
 
         const result = await trendAgent.execute(`
-      # トレンド分析依頼
+      # Trend Analysis Request
       
-      ## チャンネル情報
-      チャンネルコンセプト: ${input.channelConcept}
-      ターゲットオーディエンス: ${input.targetAudience}
-      コンテンツ目標: ${input.contentGoals.join(', ')}
-      既存コンテンツ/強み: ${input.existingContent || '情報なし'}
-      ブランドガイドライン: ${input.brandGuidelines || '情報なし'}
-      関心のあるトレンドトピック: ${input.trendTopics ? input.trendTopics.join(', ') : '指定なし'}
-      競合チャンネル: ${input.competitorChannels ? input.competitorChannels.join(', ') : '指定なし'}
+      ## Channel Information
+      Channel Concept: ${input.channelConcept}
+      Target Audience: ${input.targetAudience}
+      Content Goals: ${input.contentGoals.join(', ')}
+      Existing Content/Strengths: ${input.existingContent || 'Not provided'}
+      Brand Guidelines: ${input.brandGuidelines || 'Not provided'}
+      Trend Topics of Interest: ${input.trendTopics ? input.trendTopics.join(', ') : 'Not specified'}
+      Competitor Channels: ${input.competitorChannels ? input.competitorChannels.join(', ') : 'Not specified'}
       
-      ## 依頼内容
-      上記の情報に基づいて、YouTube Shortsに関連するトレンドを分析し、コンテンツ機会を特定してください。
+      ## Request
+      Based on the information above, analyze trends related to YouTube Shorts and identify content opportunities.
     `);
 
-        // エージェントの出力を解析してトレンド分析結果を生成
-        // 実際の実装ではより堅牢な解析が必要
+        // Parse agent output to generate trend analysis results
+        // A more robust parsing would be needed in actual implementation
         const parsedResult = {
             relevantTrends: [
                 {
-                    trend: "ハウツーコンテンツの断片化",
-                    relevance: "チャンネルコンセプトと高い関連性があり、教育的コンテンツを短く区切って提供できる",
-                    audienceAppeal: "短時間で価値ある情報を得たいターゲットオーディエンスに強く訴求する",
-                    longevity: "一時的なトレンドではなく、継続的な需要がある長期的なトレンド",
+                    trend: "Fragmented how-to content",
+                    relevance: "Highly relevant to channel concept, allowing educational content to be broken into short segments",
+                    audienceAppeal: "Strongly appeals to target audience who want valuable information in a short time",
+                    longevity: "Long-term trend with continuous demand, not a temporary trend",
                 },
                 {
-                    trend: "ビハインドザシーン（舞台裏）コンテンツ",
-                    relevance: "チャンネルの信頼性と親近感を高める機会を提供",
-                    audienceAppeal: "本物志向のオーディエンスに強く訴求し、エンゲージメントを促進",
-                    longevity: "常に新鮮なコンテンツを提供できる持続可能なトレンド",
+                    trend: "Behind-the-scenes content",
+                    relevance: "Provides opportunity to build channel credibility and familiarity",
+                    audienceAppeal: "Strongly appeals to authenticity-focused audience and promotes engagement",
+                    longevity: "Sustainable trend that can always provide fresh content",
                 },
                 {
-                    trend: "ダイジェスト形式のコンテンツ",
-                    relevance: "長尺コンテンツのハイライトを提供し、メインチャンネルへの誘導が可能",
-                    audienceAppeal: "時間効率を重視するオーディエンスに訴求",
-                    longevity: "長尺コンテンツがある限り継続可能な長期的なアプローチ",
+                    trend: "Digest-format content",
+                    relevance: "Can provide highlights of long-form content and drive traffic to main channel",
+                    audienceAppeal: "Appeals to time-conscious audience",
+                    longevity: "Long-term approach that can continue as long as long-form content exists",
                 },
             ],
             competitorInsights: input.competitorChannels ? [
                 {
-                    channel: input.competitorChannels[0] || "競合チャンネル1",
-                    successfulFormats: ["Q&A形式", "チャレンジ形式", "ビフォーアフター"],
-                    engagementTactics: ["視聴者参加の促進", "強いコールトゥアクション", "シリーズ化"],
+                    channel: input.competitorChannels[0] || "Competitor Channel 1",
+                    successfulFormats: ["Q&A format", "Challenge format", "Before & After"],
+                    engagementTactics: ["Encouraging viewer participation", "Strong call-to-action", "Series format"],
                 },
                 {
-                    channel: input.competitorChannels[1] || "競合チャンネル2",
-                    successfulFormats: ["ティーザー形式", "ハウツーの一部", "驚きの事実"],
-                    engagementTactics: ["質問形式のキャプション", "コメント促進", "関連長尺コンテンツへの誘導"],
+                    channel: input.competitorChannels[1] || "Competitor Channel 2",
+                    successfulFormats: ["Teaser format", "Partial how-to", "Surprising facts"],
+                    engagementTactics: ["Question-format captions", "Comment promotion", "Driving to related long-form content"],
                 },
             ] : [],
             contentOpportunities: [
-                "長尺コンテンツのハイライトやティーザーを提供し、メインチャンネルへの誘導を促進",
-                "特定のスキルや知識の「ワンポイントレッスン」形式で価値を提供",
-                "業界の最新トレンドや統計に関する「知っておくべき事実」シリーズ",
-                "視聴者の質問に答える「Q&A」シリーズ",
-                "「ビフォーアフター」形式で成果や変化を視覚的に示す",
-                "「舞台裏」コンテンツでブランドの人間味を示す",
-                "「やってはいけないこと」形式で一般的な間違いを指摘",
-                "チャレンジ形式で視聴者参加を促進",
+                "Provide highlights or teasers of long-form content to drive traffic to main channel",
+                "Deliver 'quick tip' format for specific skills or knowledge to provide value",
+                "'Things to know' series about latest industry trends or statistics",
+                "'Q&A' series answering viewer questions",
+                "Visual 'Before & After' format to demonstrate results or changes",
+                "'Behind-the-scenes' content to show the human side of the brand",
+                "'What not to do' format pointing out common mistakes",
+                "Challenge format to encourage viewer participation",
             ],
         };
 
@@ -209,8 +209,10 @@ const analyzeTrendsStep = createStep({
     },
 });
 
-// Shorts企画生成ステップ
-description: 'Generate creative Shorts content ideas based on trends and channel concept',
+// Shorts idea generation step
+const generateShortsIdeasStep = createStep({
+    id: 'generate-shorts-ideas',
+    description: 'Generate creative Shorts content ideas based on trends and channel concept',
     inputSchema: z.object({
         validatedInput: z.object({
             channelConcept: z.string(),
@@ -237,163 +239,165 @@ description: 'Generate creative Shorts content ideas based on trends and channel
             contentOpportunities: z.array(z.string()),
         }),
     }),
-        outputSchema: z.object({
-            shortsIdeas: z.array(z.object({
-                title: z.string(),
-                concept: z.string(),
-                format: z.string(),
-                hook: z.string(),
-                visualElements: z.array(z.string()),
-                callToAction: z.string(),
-                estimatedDuration: z.string(),
-                relatedTrend: z.string().optional(),
-                targetGoal: z.string(),
-                engagementTactic: z.string(),
-            })),
-        }),
-            execute: async (params) => {
-                const input = params.input.validatedInput;
-                const trendAnalysis = params.input.trendAnalysis;
+    outputSchema: z.object({
+        shortsIdeas: z.array(z.object({
+            title: z.string(),
+            concept: z.string(),
+            format: z.string(),
+            hook: z.string(),
+            visualElements: z.array(z.string()),
+            callToAction: z.string(),
+            estimatedDuration: z.string(),
+            relatedTrend: z.string().optional(),
+            targetGoal: z.string(),
+            engagementTactic: z.string(),
+        })),
+    }),
+    execute: async (params: { input: any; context: any; mastra?: any }) => {
+        const input = params.input.validatedInput;
+        const trendAnalysis = params.input.trendAnalysis;
 
-                // Shorts企画生成エージェントを使用
-                const ideationAgent = new Agent({
-                    name: 'Shorts Ideation Expert',
-                    model: llm,
-                    instructions: `
-        あなたはYouTube Shorts企画の専門家です。
-        与えられたチャンネルコンセプト、ターゲットオーディエンス、トレンド分析に基づいて、
-        創造的で効果的なShortsコンテンツのアイデアを生成してください。
+        // Shorts idea generation agent
+        const ideationAgent = new Agent({
+            name: 'Shorts Ideation Expert',
+            model: llm,
+            instructions: `
+        You are a YouTube Shorts ideation expert.
+        Based on the given channel concept, target audience, and trend analysis,
+        generate creative and effective Shorts content ideas.
         
-        各アイデアには以下の要素を含めてください：
-        1. タイトル：魅力的で注目を引くタイトル
-        2. コンセプト：コンテンツの基本的なアイデアと目的
-        3. フォーマット：コンテンツの構造（ハウツー、Q&A、チャレンジなど）
-        4. フック：最初の数秒で視聴者の注意を引く方法
-        5. 視覚要素：含めるべき視覚的要素のリスト
-        6. コールトゥアクション：視聴者に促す行動
-        7. 推定時間：理想的な動画の長さ（15-60秒の範囲内）
-        8. 関連トレンド：活用するトレンド（該当する場合）
-        9. 目標：このコンテンツが達成する主要な目標
-        10. エンゲージメント戦術：視聴者の参加を促す方法
+        Include the following elements for each idea:
+        1. Title: Catchy title that grabs attention
+        2. Concept: Basic idea and purpose of the content
+        3. Format: Content structure (how-to, Q&A, challenge, etc.)
+        4. Hook: How to grab viewer attention in the first few seconds
+        5. Visual Elements: List of visual elements to include
+        6. Call to Action: Action to encourage from viewers
+        7. Estimated Duration: Ideal video length (within 15-60 seconds)
+        8. Related Trend: Trend being utilized (if applicable)
+        9. Target Goal: Main goal this content achieves
+        10. Engagement Tactic: How to encourage viewer participation
         
-        アイデアは具体的で実用的なものにし、チャンネルコンセプトとターゲットオーディエンスに
-        適合するようにしてください。また、YouTube Shortsの特性（短尺、縦型フォーマット、
-        注目を引く必要性など）を考慮してください。
+        Make ideas specific and practical, appropriate for channel concept and target audience.
+        Also consider YouTube Shorts characteristics (short format, vertical format, need to capture attention, etc.).
       `,
-                });
+        });
 
-                const result = await ideationAgent.execute(`
-      # Shorts企画生成依頼
+        const result = await ideationAgent.execute(`
+      # Shorts Idea Generation Request
       
-      ## チャンネル情報
-      チャンネルコンセプト: ${input.channelConcept}
-      ターゲットオーディエンス: ${input.targetAudience}
-      コンテンツ目標: ${input.contentGoals.join(', ')}
-      既存コンテンツ/強み: ${input.existingContent || '情報なし'}
-      ブランドガイドライン: ${input.brandGuidelines || '情報なし'}
+      ## Channel Information
+      Channel Concept: ${input.channelConcept}
+      Target Audience: ${input.targetAudience}
+      Content Goals: ${input.contentGoals.join(', ')}
+      Existing Content/Strengths: ${input.existingContent || 'Not provided'}
+      Brand Guidelines: ${input.brandGuidelines || 'Not provided'}
       
-      ## トレンド分析
-      関連トレンド:
+      ## Trend Analysis
+      Relevant Trends:
       ${trendAnalysis.relevantTrends.map(trend =>
-                    `- ${trend.trend}: ${trend.relevance}`
-                ).join('\n')}
+            `- ${trend.trend}: ${trend.relevance}`
+        ).join('\n')}
       
-      コンテンツ機会:
+      Content Opportunities:
       ${trendAnalysis.contentOpportunities.map(opportunity =>
-                    `- ${opportunity}`
-                ).join('\n')}
+            `- ${opportunity}`
+        ).join('\n')}
       
       ${trendAnalysis.competitorInsights && trendAnalysis.competitorInsights.length > 0 ? `
-      競合インサイト:
+      Competitor Insights:
       ${trendAnalysis.competitorInsights.map(insight =>
-                    `- ${insight.channel}: ${insight.successfulFormats.join(', ')}`
-                ).join('\n')}
+            `- ${insight.channel}: ${insight.successfulFormats.join(', ')}`
+        ).join('\n')}
       ` : ''}
       
-      ## 依頼内容
-      上記の情報に基づいて、${input.ideaCount}個の創造的で効果的なShortsコンテンツのアイデアを生成してください。
+      ## Request
+      Based on the information above, generate ${input.ideaCount} creative and effective Shorts content ideas.
     `);
 
-                // エージェントの出力を解析してShortsアイデアを生成
-                // 実際の実装ではより堅牢な解析が必要
-                const parsedResult = [
-                    {
-                        title: "60秒で学ぶ基本スキル",
-                        concept: "特定のスキルや知識の基本を60秒で簡潔に教える",
-                        format: "ハウツー/教育",
-                        hook: "「この1分で[スキル]の基本が身につきます」という強いオープニング",
-                        visualElements: ["テキストオーバーレイ", "ステップ番号", "進行バー", "ビフォーアフター比較"],
-                        callToAction: "詳細な解説は長尺動画をチェック（リンクはプロフィールから）",
-                        estimatedDuration: "55-60秒",
-                        relatedTrend: "ハウツーコンテンツの断片化",
-                        targetGoal: "価値提供と長尺コンテンツへの誘導",
-                        engagementTactic: "コメント欄で質問を促す",
-                    },
-                    {
-                        title: "知っておくべき[業界]の事実",
-                        concept: "業界の驚くべき統計や事実を紹介し、視聴者の知識を広げる",
-                        format: "リスト/事実紹介",
-                        hook: "「あなたが知らない[業界]の衝撃的な事実」で始まる注目を引く導入",
-                        visualElements: ["数字のカウントダウン", "驚きを表す表情", "データの視覚化", "テキストハイライト"],
-                        callToAction: "他にも知りたい事実があればコメントで教えてください",
-                        estimatedDuration: "30-45秒",
-                        relatedTrend: "ダイジェスト形式のコンテンツ",
-                        targetGoal: "エンゲージメント向上と権威性の確立",
-                        engagementTactic: "「知ってた？」という質問でコメントを促す",
-                    },
-                    {
-                        title: "よくある間違い TOP3",
-                        concept: "特定の分野でよくある間違いとその修正方法を紹介",
-                        format: "問題解決/アドバイス",
-                        hook: "「あなたも知らずにやっているかも？」という問いかけ",
-                        visualElements: ["✓と✗のグラフィック", "ビフォーアフター", "テキストオーバーレイ", "矢印や円などの注目マーカー"],
-                        callToAction: "他の間違いを避けるためのガイドはプロフィールリンクから",
-                        estimatedDuration: "45秒",
-                        relatedTrend: "ハウツーコンテンツの断片化",
-                        targetGoal: "問題解決による価値提供",
-                        engagementTactic: "「あなたが経験した間違いは？」と質問",
-                    },
-                    {
-                        title: "制作の舞台裏",
-                        concept: "長尺コンテンツの制作過程や舞台裏を見せることで親近感を高める",
-                        format: "ビハインドザシーン",
-                        hook: "「あなたが見ている動画はこうして作られています」という導入",
-                        visualElements: ["タイムラプス", "ビフォーアフター", "失敗シーン", "機材や設定の様子"],
-                        callToAction: "完成した動画はプロフィールから見られます",
-                        estimatedDuration: "30秒",
-                        relatedTrend: "ビハインドザシーン（舞台裏）コンテンツ",
-                        targetGoal: "ブランド親近感の向上",
-                        engagementTactic: "「他に見たい舞台裏はある？」と質問",
-                    },
-                    {
-                        title: "1日5分で上達する方法",
-                        concept: "短時間で継続的に取り組むことで上達する方法を紹介",
-                        format: "アドバイス/モチベーション",
-                        hook: "「たった5分でも続ければ驚くほど上達します」という刺激的な導入",
-                        visualElements: ["進捗グラフ", "ビフォーアフター", "タイマー表示", "実践例"],
-                        callToAction: "詳細な5分間トレーニング計画はリンクから",
-                        estimatedDuration: "45-60秒",
-                        relatedTrend: "ハウツーコンテンツの断片化",
-                        targetGoal: "モチベーション向上と長尺コンテンツへの誘導",
-                        engagementTactic: "「あなたの5分間習慣は？」とコメントを促す",
-                    },
-                ];
-
-                // 要求されたアイデア数に合わせて結果を調整
-                const shortsIdeas = parsedResult.slice(0, input.ideaCount);
-
-                // アイデア数が足りない場合は、既存のアイデアをベースに新しいアイデアを生成
-                if (shortsIdeas.length < input.ideaCount) {
-                    // 実際の実装では、不足分のアイデアを生成するロジックを追加
-                }
-
-                return {
-                    shortsIdeas,
-                };
+        // Parse agent output to generate Shorts ideas
+        // A more robust parsing would be needed in actual implementation
+        const parsedResult = [
+            {
+                title: "Learn Basic Skills in 60 Seconds",
+                concept: "Teach a specific skill or knowledge concisely in 60 seconds",
+                format: "How-to/Educational",
+                hook: "Strong opening with \"You'll learn [skill] in just one minute\"",
+                visualElements: ["Text overlay", "Step numbers", "Progress bar", "Before & After comparison"],
+                callToAction: "Check out the detailed tutorial in our long-form video (link in profile)",
+                estimatedDuration: "55-60 seconds",
+                relatedTrend: "Fragmented how-to content",
+                targetGoal: "Providing value and driving to long-form content",
+                engagementTactic: "Encouraging questions in comments",
             },
+            {
+                title: "Must-Know [Industry] Facts",
+                concept: "Introduce surprising statistics or facts to expand viewer knowledge",
+                format: "List/Fact presentation",
+                hook: "Start with \"Did you know this shocking [industry] fact?\"",
+                visualElements: ["Number countdown", "Surprised facial expression", "Data visualization", "Text highlights"],
+                callToAction: "Tell us which fact surprised you most in the comments",
+                estimatedDuration: "30-45 seconds",
+                relatedTrend: "Digest-format content",
+                targetGoal: "Engagement increase and authority establishment",
+                engagementTactic: "Asking \"Did you know?\" to encourage comments",
+            },
+            {
+                title: "Top 3 Common Mistakes",
+                concept: "Highlight common mistakes in a specific area and how to fix them",
+                format: "Problem-solving/Advice",
+                hook: "Open with \"Are you making these mistakes without knowing?\"",
+                visualElements: ["✓ and ✗ graphics", "Before & After", "Text overlay", "Attention markers like arrows or circles"],
+                callToAction: "Get our complete guide to avoiding mistakes from profile link",
+                estimatedDuration: "45 seconds",
+                relatedTrend: "Fragmented how-to content",
+                targetGoal: "Providing value through problem-solving",
+                engagementTactic: "Asking \"What mistakes have you experienced?\" to drive comments",
+            },
+            {
+                title: "Behind the Scenes",
+                concept: "Show production process or behind-the-scenes to build familiarity",
+                format: "Behind-the-scenes",
+                hook: "Start with \"This is how your favorite videos are made\"",
+                visualElements: ["Time-lapse", "Before & After", "Bloopers", "Equipment/setup views"],
+                callToAction: "Watch the finished video from our profile",
+                estimatedDuration: "30 seconds",
+                relatedTrend: "Behind-the-scenes content",
+                targetGoal: "Building brand familiarity",
+                engagementTactic: "Asking \"What other behind-the-scenes would you like to see?\"",
+            },
+            {
+                title: "Improve in Just 5 Minutes a Day",
+                concept: "Showcase how consistent short practice can lead to improvement",
+                format: "Advice/Motivation",
+                hook: "Start with \"Just 5 minutes a day can dramatically improve your [skill]\"",
+                visualElements: ["Progress graph", "Before & After", "Timer display", "Practice examples"],
+                callToAction: "Get the full 5-minute training plan from link in bio",
+                estimatedDuration: "45-60 seconds",
+                relatedTrend: "Fragmented how-to content",
+                targetGoal: "Motivation increase and driving to long-form content",
+                engagementTactic: "Encouraging viewers to share their daily habits in comments",
+            },
+        ];
+
+        // Adjust results to match requested idea count
+        const shortsIdeas = parsedResult.slice(0, input.ideaCount);
+
+        // If idea count is insufficient, generate additional ideas based on existing ones
+        if (shortsIdeas.length < input.ideaCount) {
+            // In actual implementation, add logic to generate additional ideas
+        }
+
+        return {
+            shortsIdeas,
+        };
+    },
 });
 
-description: 'Create series recommendations based on generated ideas',
+// Series recommendations step
+const createSeriesRecommendationsStep = createStep({
+    id: 'create-series-recommendations',
+    description: 'Create series recommendations based on generated ideas',
     inputSchema: z.object({
         validatedInput: z.object({
             channelConcept: z.string(),
@@ -418,344 +422,211 @@ description: 'Create series recommendations based on generated ideas',
             engagementTactic: z.string(),
         })),
     }),
-        outputSchema: z.object({
-            seriesRecommendations: z.array(z.object({
-                seriesTitle: z.string(),
-                seriesConcept: z.string(),
-                includedIdeas: z.array(z.number()),
-                publishingSchedule: z.string(),
-                expectedOutcomes: z.array(z.string()),
-                expansionPotential: z.string(),
+    outputSchema: z.object({
+        seriesRecommendations: z.array(z.object({
+            seriesTitle: z.string(),
+            seriesConcept: z.string(),
+            includedIdeas: z.array(z.number()),
+            publishingSchedule: z.string(),
+            expectedOutcomes: z.array(z.string()),
+            expansionPotential: z.string(),
+        })),
+        contentCalendar: z.object({
+            firstMonth: z.array(z.object({
+                week: z.number(),
+                content: z.string(),
+                goal: z.string(),
             })),
-            contentCalendar: z.object({
-                firstMonth: z.array(z.object({
-                    week: z.number(),
-                    content: z.string(),
-                    goal: z.string(),
-                })),
-            }),
         }),
-            execute: async (params) => {
-                const input = params.input.validatedInput;
-                const shortsIdeas = params.input.shortsIdeas;
+    }),
+    execute: async (params: { input: any; context: any; mastra?: any }) => {
+        const input = params.input.validatedInput;
+        const shortsIdeas = params.input.shortsIdeas;
 
-                // シリーズ提案エージェントを使用
-                const seriesAgent = new Agent({
-                    name: 'Content Series Strategist',
-                    model: llm,
-                    instructions: `
-        あなたはYouTubeコンテンツシリーズの戦略専門家です。
-        生成されたShortsアイデアに基づいて、効果的なシリーズ提案とコンテンツカレンダーを作成してください。
+        // Series recommendations agent
+        const seriesAgent = new Agent({
+            name: 'Content Series Strategist',
+            model: llm,
+            instructions: `
+        You are a YouTube content series strategy specialist.
+        Based on the generated Shorts ideas, create effective series recommendations and content calendar.
         
-        シリーズ提案には以下の要素を含めてください：
-        1. シリーズタイトル：一貫性のある魅力的なタイトル
-        2. シリーズコンセプト：シリーズの目的と全体的なテーマ
-        3. 含まれるアイデア：シリーズに含めるアイデアのインデックス番号
-        4. 公開スケジュール：推奨される公開頻度と順序
-        5. 期待される成果：シリーズから期待される結果
-        6. 拡張可能性：シリーズをどのように拡張できるか
+        Include the following elements in your series recommendations:
+        1. Series Title: Consistent, engaging title
+        2. Series Concept: Purpose and overall theme of the series
+        3. Included Ideas: Index numbers of ideas to include in the series
+        4. Publishing Schedule: Recommended publishing frequency and order
+        5. Expected Outcomes: Results expected from the series
+        6. Expansion Potential: How the series could be expanded
         
-        コンテンツカレンダーには、最初の1ヶ月間の週ごとの公開計画を含めてください。
+        Include a content calendar with a week-by-week publishing plan for the first month.
         
-        提案は具体的で実用的なものにし、チャンネルコンセプト、ターゲットオーディエンス、
-        コンテンツ目標に適合するようにしてください。
+        Make recommendations specific and practical, appropriate for channel concept, target audience,
+        and content goals.
       `,
-                });
+        });
 
-                const result = await seriesAgent.execute(`
-      # シリーズ提案依頼
+        const result = await seriesAgent.execute(`
+      # Series Recommendations Request
       
-      ## チャンネル情報
-      チャンネルコンセプト: ${input.channelConcept}
-      ターゲットオーディエンス: ${input.targetAudience}
-      コンテンツ目標: ${input.contentGoals.join(', ')}
+      ## Channel Information
+      Channel Concept: ${input.channelConcept}
+      Target Audience: ${input.targetAudience}
+      Content Goals: ${input.contentGoals.join(', ')}
       
-      ## 生成されたShortsアイデア
+      ## Generated Shorts Ideas
       ${shortsIdeas.map((idea, index) => `
       ${index + 1}. ${idea.title}
-      コンセプト: ${idea.concept}
-      フォーマット: ${idea.format}
-      目標: ${idea.targetGoal}
+      Concept: ${idea.concept}
+      Format: ${idea.format}
+      Goal: ${idea.targetGoal}
       `).join('\n')}
       
-      ## 依頼内容
-      上記のShortsアイデアに基づいて、効果的なシリーズ提案とコンテンツカレンダーを作成してください。
+      ## Request
+      Based on the Shorts ideas above, create effective series recommendations and content calendar.
     `);
 
-                // エージェントの出力を解析してシリーズ提案を生成
-                // 実際の実装ではより堅牢な解析が必要
-                const parsedResult = {
-                    seriesRecommendations: [
-                        {
-                            seriesTitle: "マスタークラス・ミニッツ",
-                            seriesConcept: "複雑なスキルや知識を1分間で分かりやすく教える教育シリーズ",
-                            includedIdeas: [0], // "60秒で学ぶ基本スキル"
-                            publishingSchedule: "週1回（月曜日）、一貫した時間に公開",
-                            expectedOutcomes: [
-                                "チャンネルの教育的権威性の確立",
-                                "定期的な視聴習慣の形成",
-                                "長尺コンテンツへの誘導増加",
-                            ],
-                            expansionPotential: "トピックを拡張し、初級から上級まで段階的に進むシリーズに発展可能",
-                        },
-                        {
-                            seriesTitle: "業界の真実",
-                            seriesConcept: "業界の意外な事実や統計を紹介し、視聴者の知識を広げるシリーズ",
-                            includedIdeas: [1], // "知っておくべき[業界]の事実"
-                            publishingSchedule: "週1回（水曜日）、一貫した時間に公開",
-                            expectedOutcomes: [
-                                "エンゲージメント率の向上",
-                                "シェア数の増加",
-                                "チャンネルの専門性の印象強化",
-                            ],
-                            expansionPotential: "特定のテーマ週間や、視聴者からのリクエストに基づくエピソードの追加",
-                        },
-                        {
-                            seriesTitle: "成長ハック",
-                            seriesConcept: "効率的な上達方法と一般的な間違いを避けるためのアドバイスを提供するシリーズ",
-                            includedIdeas: [2, 4], // "よくある間違い TOP3"と"1日5分で上達する方法"
-                            publishingSchedule: "週2回（火曜日と金曜日）、一貫した時間に公開",
-                            expectedOutcomes: [
-                                "視聴者の実践的な成果の向上",
-                                "コメント欄での活発な議論",
-                                "コミュニティ形成の促進",
-                            ],
-                            expansionPotential: "視聴者の成功事例を取り上げたフォローアップエピソードの追加",
-                        },
-                        {
-                            seriesTitle: "クリエイターの舞台裏",
-                            seriesConcept: "コンテンツ制作の舞台裏を見せることで親近感を高めるシリーズ",
-                            includedIdeas: [3], // "制作の舞台裏"
-                            publishingSchedule: "隔週（日曜日）、主要コンテンツ公開後",
-                            expectedOutcomes: [
-                                "チャンネルへの親近感の向上",
-                                "ブランドの人間味の強化",
-                                "コミュニティの結束強化",
-                            ],
-                            expansionPotential: "特別なプロジェクトや協力者との共同作業の舞台裏を追加",
-                        },
-                    ],
-                    contentCalendar: {
-                        firstMonth: [
-                            {
-                                week: 1,
-                                content: "マスタークラス・ミニッツ #1 + 成長ハック #1（よくある間違い）",
-                                goal: "チャンネルの教育的価値の確立と視聴者の問題解決",
-                            },
-                            {
-                                week: 2,
-                                content: "業界の真実 #1 + 成長ハック #2（5分間習慣）+ クリエイターの舞台裏 #1",
-                                goal: "エンゲージメント向上とブランド親近感の構築",
-                            },
-                            {
-                                week: 3,
-                                content: "マスタークラス・ミニッツ #2 + 成長ハック #3（新しいトピック）",
-                                goal: "教育的価値の継続提供と視聴習慣の形成",
-                            },
-                            {
-                                week: 4,
-                                content: "業界の真実 #2 + 成長ハック #4（新しいトピック）+ クリエイターの舞台裏 #2",
-                                goal: "シリーズの一貫性確立とコミュニティ形成の促進",
-                            },
-                        ],
-                    },
-                };
-
-                return {
-                    seriesRecommendations: parsedResult.seriesRecommendations,
-                    contentCalendar: parsedResult.contentCalendar,
-                };
-            },
-            });
-
-// ワークフロー定義
-const youtubeShortsIdeationWorkflow = createWorkflow({
-    id: 'youtube-shorts-ideation-workflow',
-    description: 'YouTube Shorts向けの企画アイデアを生成するワークフロー',
-    inputSchema: z.object({
-        channelConcept: z.string().describe('チャンネルのコンセプトや方向性'),
-        targetAudience: z.string().describe('ターゲットオーディエンス'),
-        contentGoals: z.array(z.string()).describe('コンテンツの目標（認知拡大、エンゲージメント向上、コンバージョンなど）'),
-        existingContent: z.string().optional().describe('既存のコンテンツや強み（オプション）'),
-        brandGuidelines: z.string().optional().describe('ブランドガイドラインや制約（オプション）'),
-        trendTopics: z.array(z.string()).optional().describe('取り入れたいトレンドトピック（オプション）'),
-        competitorChannels: z.array(z.string()).optional().describe('競合チャンネル（オプション）'),
-        ideaCount: z.number().optional().describe('生成するアイデアの数（デフォルト: 10）'),
-    }),
-    outputSchema: z.object({
-        success: z.boolean(),
-        message: z.string(),
-        result: z.object({
-            shortsIdeas: z.array(z.object({
-                title: z.string(),
-                concept: z.string(),
-                format: z.string(),
-                hook: z.string(),
-                visualElements: z.array(z.string()),
-                callToAction: z.string(),
-                estimatedDuration: z.string(),
-                relatedTrend: z.string().optional(),
-                targetGoal: z.string(),
-                engagementTactic: z.string(),
-            })),
-            seriesRecommendations: z.array(z.object({
-                seriesTitle: z.string(),
-                seriesConcept: z.string(),
-                includedIdeas: z.array(z.number()),
-                publishingSchedule: z.string(),
-                expectedOutcomes: z.array(z.string()),
-                expansionPotential: z.string(),
-            })),
-            contentCalendar: z.object({
-                firstMonth: z.array(z.object({
-                    week: z.number(),
-                    content: z.string(),
-                    goal: z.string(),
-                })),
-            }),
-        }).optional(),
-    }),
-})
-    .then(validateShortsIdeationInputStep)
-    .then(analyzeTrendsStep)
-    .then(generateShortsIdeasStep)
-    .then(createSeriesRecommendationsStep);
-
-// ワークフローをコミット
-youtubeShortsIdeationWorkflow.commit();
-
-// エクスポート
-export { youtubeShortsIdeationWorkflow };
-"エンゲージメント率の向上",
-    "シェア数の増加",
-    "チャンネルの専門性の印象強化",
-                                ],
-expansionPotential: "特定のテーマ週間や、視聴者からのリクエストに基づくエピソードの追加",
-                            },
-{
-    seriesTitle: "成長ハック",
-        seriesConcept: "効率的な上達方法と一般的な間違いを避けるためのアドバイスを提供するシリーズ",
-            includedIdeas: [2, 4], // "よくある間違い TOP3"と"1日5分で上達する方法"
-                publishingSchedule: "週2回（火曜日と金曜日）、一貫した時間に公開",
+        // Parse agent output to generate series recommendations
+        // A more robust parsing would be needed in actual implementation
+        const parsedResult = {
+            seriesRecommendations: [
+                {
+                    seriesTitle: "Masterclass Minutes",
+                    seriesConcept: "Educational series teaching complex skills or knowledge in an easy-to-understand one-minute format",
+                    includedIdeas: [0], // "Learn Basic Skills in 60 Seconds"
+                    publishingSchedule: "Weekly (Mondays), consistent time",
                     expectedOutcomes: [
-                        "視聴者の実践的な成果の向上",
-                        "コメント欄での活発な議論",
-                        "コミュニティ形成の促進",
+                        "Establishing educational authority",
+                        "Creating regular viewing habit",
+                        "Increasing traffic to long-form content",
                     ],
-                        expansionPotential: "視聴者の成功事例を取り上げたフォローアップエピソードの追加",
-                            },
-{
-    seriesTitle: "クリエイターの舞台裏",
-        seriesConcept: "コンテンツ制作の舞台裏を見せることで親近感を高めるシリーズ",
-            includedIdeas: [3], // "制作の舞台裏"
-                publishingSchedule: "隔週（日曜日）、主要コンテンツ公開後",
-                    expectedOutcomes: [
-                        "チャンネルへの親近感の向上",
-                        "ブランドの人間味の強化",
-                        "コミュニティの結束強化",
-                    ],
-                        expansionPotential: "特別なプロジェクトや協力者との共同作業の舞台裏を追加",
-                            },
-                        ],
-contentCalendar: {
-    firstMonth: [
-        {
-            week: 1,
-            content: "マスタークラス・ミニッツ #1 + 成長ハック #1（よくある間違い）",
-            goal: "チャンネルの教育的価値の確立と視聴者の問題解決",
-        },
-        {
-            week: 2,
-            content: "業界の真実 #1 + 成長ハック #2（5分間習慣）+ クリエイターの舞台裏 #1",
-            goal: "エンゲージメント向上とブランド親近感の構築",
-        },
-        {
-            week: 3,
-            content: "マスタークラス・ミニッツ #2 + 成長ハック #3（新しいトピック）",
-            goal: "教育的価値の継続提供と視聴習慣の形成",
-        },
-        {
-            week: 4,
-            content: "業界の真実 #2 + 成長ハック #4（新しいトピック）+ クリエイターの舞台裏 #2",
-            goal: "シリーズの一貫性確立とコミュニティ形成の促進",
-        },
-    ],
-                        },
-                    };
-
-return {
-    seriesRecommendations: parsedResult.seriesRecommendations,
-    contentCalendar: parsedResult.contentCalendar,
-};
+                    expansionPotential: "Can expand topics and progress from beginner to advanced levels",
                 },
-            });
-
-// ワークフロー定義
-const youtubeShortsIdeationWorkflow = createWorkflow({
-    id: 'youtube-shorts-ideation-workflow',
-    description: 'YouTube Shorts向けの企画アイデアを生成するワークフロー',
-    inputSchema: z.object({
-        channelConcept: z.string().describe('チャンネルのコンセプトや方向性'),
-        targetAudience: z.string().describe('ターゲットオーディエンス'),
-        contentGoals: z.array(z.string()).describe('コンテンツの目標（認知拡大、エンゲージメント向上、コンバージョンなど）'),
-        existingContent: z.string().optional().describe('既存のコンテンツや強み（オプション）'),
-        brandGuidelines: z.string().optional().describe('ブランドガイドラインや制約（オプション）'),
-        trendTopics: z.array(z.string()).optional().describe('取り入れたいトレンドトピック（オプション）'),
-        competitorChannels: z.array(z.string()).optional().describe('競合チャンネル（オプション）'),
-        ideaCount: z.number().optional().describe('生成するアイデアの数（デフォルト: 10）'),
-    }),
-    outputSchema: z.object({
-        success: z.boolean(),
-        message: z.string(),
-        result: z.object({
-            shortsIdeas: z.array(z.object({
-                title: z.string(),
-                concept: z.string(),
-                format: z.string(),
-                hook: z.string(),
-                visualElements: z.array(z.string()),
-                callToAction: z.string(),
-                estimatedDuration: z.string(),
-                relatedTrend: z.string().optional(),
-                targetGoal: z.string(),
-                engagementTactic: z.string(),
-            })),
-            seriesRecommendations: z.array(z.object({
-                seriesTitle: z.string(),
-                seriesConcept: z.string(),
-                includedIdeas: z.array(z.number()),
-                publishingSchedule: z.string(),
-                expectedOutcomes: z.array(z.string()),
-                expansionPotential: z.string(),
-            })),
-            contentCalendar: z.object({
-                firstMonth: z.array(z.object({
-                    week: z.number(),
-                    content: z.string(),
-                    goal: z.string(),
-                })),
-            }),
-        }).optional(),
-    }),
-})
-    .then(validateShortsIdeationInputStep)
-    .then(analyzeTrendsStep)
-    .then(generateShortsIdeasStep)
-    .then(createSeriesRecommendationsStep);
-
-// ワークフローをコミット
-youtubeShortsIdeationWorkflow.commit();
-
-// エクスポート
-export { youtubeShortsIdeationWorkflow };
-"「舞台裏」コンテンツでブランドの人間味を示す",
-    "「やってはいけないこと」形式で一般的な間違いを指摘",
-    "チャレンジ形式で視聴者参加を促進",
+                {
+                    seriesTitle: "Industry Truths",
+                    seriesConcept: "Series introducing surprising facts or statistics to expand viewer knowledge",
+                    includedIdeas: [1], // "Must-Know [Industry] Facts"
+                    publishingSchedule: "Weekly (Wednesdays), consistent time",
+                    expectedOutcomes: [
+                        "Increasing engagement rate",
+                        "Increasing share count",
+                        "Strengthening channel expertise impression",
+                    ],
+                    expansionPotential: "Add themed weeks or viewer-requested topic episodes",
+                },
+                {
+                    seriesTitle: "Growth Hacks",
+                    seriesConcept: "Series providing efficient improvement methods and avoiding common mistakes",
+                    includedIdeas: [2, 4], // "Top 3 Common Mistakes" and "Improve in Just 5 Minutes a Day"
+                    publishingSchedule: "Twice weekly (Tuesdays and Fridays), consistent time",
+                    expectedOutcomes: [
+                        "Improving viewer practical results",
+                        "Encouraging active discussion in comments",
+                        "Promoting community building",
+                    ],
+                    expansionPotential: "Add follow-up episodes featuring viewer success stories",
+                },
+                {
+                    seriesTitle: "Creator Behind-the-Scenes",
+                    seriesConcept: "Series showing content production process to build familiarity",
+                    includedIdeas: [3], // "Behind the Scenes"
+                    publishingSchedule: "Bi-weekly (Sundays), after main content release",
+                    expectedOutcomes: [
+                        "Increasing channel familiarity",
+                        "Strengthening brand human element",
+                        "Strengthening community cohesion",
+                    ],
+                    expansionPotential: "Add behind-the-scenes of special projects or collaborations",
+                },
             ],
+            contentCalendar: {
+                firstMonth: [
+                    {
+                        week: 1,
+                        content: "Masterclass Minutes #1 + Growth Hacks #1 (Common Mistakes)",
+                        goal: "Establishing educational value and problem-solving for viewers",
+                    },
+                    {
+                        week: 2,
+                        content: "Industry Truths #1 + Growth Hacks #2 (5-Minute Practice) + Creator Behind-the-Scenes #1",
+                        goal: "Increasing engagement and building brand familiarity",
+                    },
+                    {
+                        week: 3,
+                        content: "Masterclass Minutes #2 + Growth Hacks #3 (New topic)",
+                        goal: "Continuing educational value and forming viewing habits",
+                    },
+                    {
+                        week: 4,
+                        content: "Industry Truths #2 + Growth Hacks #4 (New topic) + Creator Behind-the-Scenes #2",
+                        goal: "Establishing series consistency and promoting community building",
+                    },
+                ],
+            },
         };
 
-return {
-    trendAnalysis: parsedResult,
-};
+        return {
+            seriesRecommendations: parsedResult.seriesRecommendations,
+            contentCalendar: parsedResult.contentCalendar,
+        };
     },
 });
+
+// Workflow definition
+const youtubeShortsIdeationWorkflow = createWorkflow({
+    id: 'youtube-shorts-ideation-workflow',
+    description: 'Generate creative ideas for YouTube Shorts content',
+    inputSchema: z.object({
+        channelConcept: z.string().describe('Channel concept and direction'),
+        targetAudience: z.string().describe('Target audience'),
+        contentGoals: z.array(z.string()).describe('Content goals (awareness, engagement, conversion, etc.)'),
+        existingContent: z.string().optional().describe('Existing content or strengths (optional)'),
+        brandGuidelines: z.string().optional().describe('Brand guidelines or constraints (optional)'),
+        trendTopics: z.array(z.string()).optional().describe('Trend topics to incorporate (optional)'),
+        competitorChannels: z.array(z.string()).optional().describe('Competitor channels (optional)'),
+        ideaCount: z.number().optional().describe('Number of ideas to generate (default: 10)'),
+    }),
+    outputSchema: z.object({
+        success: z.boolean(),
+        message: z.string(),
+        result: z.object({
+            shortsIdeas: z.array(z.object({
+                title: z.string(),
+                concept: z.string(),
+                format: z.string(),
+                hook: z.string(),
+                visualElements: z.array(z.string()),
+                callToAction: z.string(),
+                estimatedDuration: z.string(),
+                relatedTrend: z.string().optional(),
+                targetGoal: z.string(),
+                engagementTactic: z.string(),
+            })),
+            seriesRecommendations: z.array(z.object({
+                seriesTitle: z.string(),
+                seriesConcept: z.string(),
+                includedIdeas: z.array(z.number()),
+                publishingSchedule: z.string(),
+                expectedOutcomes: z.array(z.string()),
+                expansionPotential: z.string(),
+            })),
+            contentCalendar: z.object({
+                firstMonth: z.array(z.object({
+                    week: z.number(),
+                    content: z.string(),
+                    goal: z.string(),
+                })),
+            }),
+        }).optional(),
+    }),
+})
+    .then(validateShortsIdeationInputStep)
+    .then(analyzeTrendsStep)
+    .then(generateShortsIdeasStep)
+    .then(createSeriesRecommendationsStep);
+
+// Commit the workflow
+youtubeShortsIdeationWorkflow.commit();
+
+// Export
+export { youtubeShortsIdeationWorkflow };

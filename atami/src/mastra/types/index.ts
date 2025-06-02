@@ -1,26 +1,26 @@
 /**
- * 共通型定義ファイル
- * Mastraフレームワークで使用する型定義や、プロジェクト全体で共通して使用する型を定義します。
+ * Common type definitions for the Mastra YouTube Agent project
  */
 
 import { z } from 'zod';
+export * from './stepTypes';
 
 /**
- * Mastraフレームワークのステップコンテキスト型
+ * Mastra framework step context type
  */
 export interface StepContext {
   getStepResult: <T>(step: any) => T | null;
 }
 
 /**
- * Mastraフレームワークのランタイムコンテキスト型
+ * Mastra framework runtime context type
  */
 export interface RuntimeContext {
   [key: string]: any;
 }
 
 /**
- * Mastraフレームワークのステップ実行パラメータ型
+ * Mastra framework step execution parameters type
  */
 export interface StepExecuteParams {
   context: StepContext;
@@ -29,10 +29,49 @@ export interface StepExecuteParams {
 }
 
 /**
- * YouTube分析関連の型定義
+ * Workflow orchestration type definitions
  */
 
-// チャンネル分析データの型
+export interface WorkflowChainConfig {
+  id: string;
+  description: string;
+  workflows: Array<{
+    workflow: any;
+    inputMapping?: Record<string, string>;
+    outputMapping?: Record<string, string>;
+    optional?: boolean;
+    condition?: (data: any) => boolean;
+    parallel?: boolean;
+  }>;
+}
+
+export type ChainStatus = 'pending' | 'running' | 'paused' | 'completed' | 'failed';
+
+export interface WorkflowExecutionStatus {
+  workflowId: string;
+  status: 'pending' | 'running' | 'completed' | 'failed' | 'skipped';
+  startTime?: string;
+  endTime?: string;
+  result?: any;
+  error?: string;
+}
+
+export interface ChainExecutionState {
+  chainId: string;
+  status: ChainStatus;
+  currentStepIndex: number;
+  startTime: string;
+  lastUpdateTime: string;
+  endTime?: string;
+  contextData: any;
+  results: WorkflowExecutionStatus[];
+}
+
+/**
+ * YouTube analytics related type definitions
+ */
+
+// Channel analytics data type
 export interface ChannelAnalytics {
   rows: Record<string, string | number>[];
   summary: {
@@ -48,7 +87,7 @@ export interface ChannelAnalytics {
   };
 }
 
-// 動画分析データの型
+// Video analytics data type
 export interface VideoAnalytics {
   videoId: string;
   rows: Record<string, string | number>[];
@@ -67,7 +106,7 @@ export interface VideoAnalytics {
   };
 }
 
-// 視聴者属性データの型
+// Audience demographics data type
 export interface AudienceData {
   dimensionType: string;
   rows: {
@@ -82,10 +121,10 @@ export interface AudienceData {
 }
 
 /**
- * タイトル生成関連の型定義
+ * Title generation related type definitions
  */
 
-// YouTubeペルソナの型
+// YouTube persona type
 export interface YouTubePersona {
   name: string;
   age: string;
@@ -97,7 +136,7 @@ export interface YouTubePersona {
   viewingHabits: string;
 }
 
-// サムネイルテキストの型
+// Thumbnail text type
 export interface ThumbnailText {
   text: string;
   rating: number;
@@ -108,7 +147,7 @@ export interface ThumbnailText {
   }[];
 }
 
-// タイトルオプションの型
+// Title option type
 export interface TitleOption {
   title: string;
   rating: number;
@@ -117,23 +156,23 @@ export interface TitleOption {
   seoKeywords: string[];
 }
 
-// タイトルとサムネイルのセットの型
+// Title and thumbnail set type
 export interface TitleAndThumbnailSet {
   thumbnailText: string;
   titles: string[];
 }
 
-// 動画説明文の型
+// Video description type
 export interface VideoDescriptionSet {
   description: string;
   tags: string[];
 }
 
 /**
- * 動画企画関連の型定義
+ * Video planning related type definitions
  */
 
-// キーワードデータの型
+// Keyword data type
 export interface KeywordData {
   keyword: string;
   searchVolume: number;
@@ -142,7 +181,7 @@ export interface KeywordData {
   rank: number;
 }
 
-// 競合動画の型
+// Competitor video type
 export interface CompetitorVideo {
   title: string;
   channelName: string;
@@ -157,7 +196,7 @@ export interface CompetitorVideo {
   weaknesses: string[];
 }
 
-// コンテンツ構造の型
+// Content structure type
 export interface ContentStructure {
   section: string;
   duration: string;
@@ -165,7 +204,7 @@ export interface ContentStructure {
   description: string;
 }
 
-// 動画タグの型
+// Video tag type
 export interface VideoTag {
   tag: string;
   relevance: number;
@@ -173,7 +212,7 @@ export interface VideoTag {
   competition: string;
 }
 
-// 視聴者維持戦略の型
+// Audience retention strategy type
 export interface AudienceRetentionStrategy {
   technique: string;
   implementation: string;
@@ -182,46 +221,46 @@ export interface AudienceRetentionStrategy {
 }
 
 /**
- * 入力スキーマの型定義
+ * Input schema type definitions
  */
 
-// チャンネル分析の入力スキーマ
+// Channel analytics input schema
 export const channelAnalyticsInputSchema = z.object({
-  channelId: z.string().describe('取得対象のチャンネル ID'),
+  channelId: z.string().describe('Channel ID to analyze'),
   startDate: z
     .string()
-    .describe('YYYY-MM-DD 形式。デフォルト: 30日前')
+    .describe('Format: YYYY-MM-DD. Default: 30 days ago')
     .optional(),
   endDate: z
     .string()
-    .describe('YYYY-MM-DD 形式。デフォルト: 今日')
+    .describe('Format: YYYY-MM-DD. Default: today')
     .optional(),
   metrics: z
     .array(z.string())
-    .describe('取得する指標のリスト')
+    .describe('List of metrics to retrieve')
     .optional(),
-  dimensions: z.string().describe('分析単位 (day/month など)').optional(),
+  dimensions: z.string().describe('Analysis unit (day/month etc.)').optional(),
 });
 
-// 動画分析の入力スキーマ
+// Video analytics input schema
 export const videoAnalyticsInputSchema = z.object({
-  channelId: z.string().describe('チャンネル ID'),
-  videoId: z.string().describe('分析対象の動画 ID'),
+  channelId: z.string().describe('Channel ID'),
+  videoId: z.string().describe('Video ID to analyze'),
   startDate: z
     .string()
-    .describe('YYYY-MM-DD 形式。デフォルト: 動画公開から30日')
+    .describe('Format: YYYY-MM-DD. Default: 30 days from video publication')
     .optional(),
   endDate: z
     .string()
-    .describe('YYYY-MM-DD 形式。デフォルト: 今日')
+    .describe('Format: YYYY-MM-DD. Default: today')
     .optional(),
   metrics: z
     .array(z.string())
-    .describe('取得する指標のリスト')
+    .describe('List of metrics to retrieve')
     .optional(),
 });
 
-// タイトル生成の入力スキーマ
+// Title generator input schema
 export const titleGeneratorInputSchema = z.object({
   videoContent: z.string().describe('The content/transcript of the video'),
   seoKeywords: z.array(z.string()).optional().describe('SEO keywords to include in titles'),
@@ -230,7 +269,7 @@ export const titleGeneratorInputSchema = z.object({
   channelTheme: z.string().optional().describe('Overall theme or focus of the YouTube channel'),
 });
 
-// サムネイルタイトル生成の入力スキーマ
+// Thumbnail title generator input schema
 export const thumbnailTitleGeneratorInputSchema = z.object({
   videoContent: z.string().describe('The content summary or full script of the video'),
   seoKeywords: z.array(z.string()).optional().describe('SEO keywords to include in titles'),
@@ -240,7 +279,7 @@ export const thumbnailTitleGeneratorInputSchema = z.object({
   scriptSource: z.enum(['WORKFLOW-3', 'WORKFLOW-7', 'direct']).optional().describe('Source of the script (WORKFLOW-3: video planning, WORKFLOW-7: narration script, direct: directly provided)'),
 });
 
-// 動画企画の入力スキーマ
+// Video planning input schema
 export const videoPlanningInputSchema = z.object({
   channelConcept: z.string().describe('The concept of the YouTube channel'),
   targetAudience: z.string().describe('Description of the target audience'),

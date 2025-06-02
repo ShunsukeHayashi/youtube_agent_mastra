@@ -1,21 +1,22 @@
 import { createWorkflow } from '@mastra/core/workflows';
 import { z } from 'zod';
 
-// 既存のワークフローのインポート
+/**
+ * Core YouTube Workflows
+ */
 export { youtubeTitleGeneratorWorkflow } from './titleGeneratorWorkflow';
 export { youtubeChannelAnalyticsWorkflow, youtubeVideoAnalyticsWorkflow } from './analyticsWorkflow';
-export { inputCollectionWorkflow } from './inputCollectionWorkflow';
+export { youtubeInputCollectionWorkflow } from './inputCollectionWorkflow';
 export { youtubeChannelConceptWorkflow } from './channelConceptWorkflow';
 export { youtubeThumbnailTitleGeneratorWorkflow } from './thumbnailTitleGeneratorWorkflow';
 export { youtubeVideoPlanningWorkflow } from './videoPlanningWorkflow';
-export { keywordResearchWorkflow } from './keywordResearchWorkflow';
+export { youtubeKeywordResearchWorkflow } from './keywordResearchWorkflow';
 export { youtubeChannelConceptDesignWorkflow, youtubeKeywordStrategyWorkflow } from './youtubeWorkflows';
 export { youtubeVideoScriptGeneratorWorkflow } from './videoScriptGeneratorWorkflow';
-export { youtubeVideoScriptGeneratorChain } from './videoScriptGeneratorWorkflow.langchain';
-export { youtubeTitleGeneratorChain } from './titleGeneratorWorkflow.langchain';
-export { youtubeTitleGeneratorVercelAI } from './titleGeneratorWorkflow.vercel-ai';
 
-// 新しく実装したワークフローのインポート
+/**
+ * Long-Form Content Workflows
+ */
 export { youtubeLongFormRoadmapWorkflow } from './longFormRoadmapWorkflow';
 export { youtubeLongFormOsaruWorkflow } from './longFormOsaruWorkflow';
 export { youtubeLongFormMoezoWorkflow } from './longFormMoezoWorkflow';
@@ -24,7 +25,9 @@ export { youtubeContentScoringWorkflow } from './contentScoringWorkflow';
 export { youtubeShortsIdeationWorkflow } from './shortsIdeationWorkflow';
 export { youtubeShortsScriptWorkflow } from './shortsScriptWorkflow';
 
-// ダミーワークフロー（vNext形式で定義）
+/**
+ * Demo Workflows (defined in vNext format)
+ */
 const youtubeSearchWorkflow = createWorkflow({
   id: 'youtube-search-workflow',
   description: 'Search for YouTube videos based on keywords (Not implemented)',
@@ -48,7 +51,7 @@ const youtubeSearchWorkflow = createWorkflow({
   }),
 });
 
-// ダミーワークフローをコミット
+// Commit the demo workflow
 youtubeSearchWorkflow.commit();
 
 const youtubeChannelPlannerWorkflow = createWorkflow({
@@ -71,7 +74,7 @@ const youtubeChannelPlannerWorkflow = createWorkflow({
   }),
 });
 
-// ダミーワークフローをコミット
+// Commit the demo workflow
 youtubeChannelPlannerWorkflow.commit();
 
 export { youtubeSearchWorkflow, youtubeChannelPlannerWorkflow };
