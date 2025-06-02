@@ -26,31 +26,77 @@
 
 ## 現在の実装状況
 
-現在、以下のワークフローがMastraフレームワークで実装されています：
+以下の13のワークフローすべてがMastraフレームワークで実装されています：
 
-1. `inputCollectionWorkflow` (WORKFLOW-13)
-2. `youtubeChannelConceptWorkflow` (WORKFLOW-1)
-3. `youtubeKeywordStrategyWorkflow` (WORKFLOW-12)
-4. `youtubeVideoPlanningWorkflow` (WORKFLOW-3)
-5. `youtubeThumbnailTitleGeneratorWorkflow` (WORKFLOW-2)
-6. `youtubeVideoScriptGeneratorWorkflow` (WORKFLOW-7)
-7. `keywordResearchWorkflow` (関連ワークフロー)
-8. `youtubeChannelAnalyticsWorkflow` (関連ワークフロー)
-9. `youtubeVideoAnalyticsWorkflow` (関連ワークフロー)
+1. **WORKFLOW-13**: プロジェクト初期インプット収集
+   - 実装: `youtubeInputCollectionWorkflow`
+   - ステータス: 完全実装、テスト済み
 
-未実装のワークフローは以下の通りです：
+2. **WORKFLOW-1**: Channel Concept Design
+   - 実装: `youtubeChannelConceptWorkflow`
+   - ステータス: 完全実装、テスト済み
 
-1. 長尺ロードマップ (WORKFLOW-8)
-2. 長尺おさる (WORKFLOW-9)
-3. 長尺もえぞう (WORKFLOW-10)
-4. 長尺掛け合い (WORKFLOW-11)
-5. コンテンツスコアリング＆フィードバック (WORKFLOW-6)
-6. YouTube Shorts企画生成 (WORKFLOW-4)
-7. Shorts台本リサーチ＆生成 (WORKFLOW-5)
+3. **WORKFLOW-12**: YouTubeキーワード戦略シミュレーション
+   - 実装: `youtubeKeywordStrategyWorkflow`
+   - ステータス: 完全実装、テスト済み
+
+4. **WORKFLOW-3**: 動画企画生成＆SEO最適化
+   - 実装: `youtubeVideoPlanningWorkflow`
+   - ステータス: 完全実装、テスト済み
+
+5. **WORKFLOW-2**: YouTube動画マーケティング支援（サムネ・タイトル生成）
+   - 実装: `youtubeThumbnailTitleGeneratorWorkflow`
+   - ステータス: 完全実装、テスト済み
+
+6. **WORKFLOW-7**: 長尺TAIKI
+   - 実装: `youtubeVideoScriptGeneratorWorkflow`
+   - ステータス: 完全実装、テスト済み
+
+7. **WORKFLOW-8**: 長尺ロードマップ
+   - 実装: `youtubeLongFormRoadmapWorkflow`
+   - ステータス: 実装済み、テスト未実施
+
+8. **WORKFLOW-9**: 長尺おさる
+   - 実装: `youtubeLongFormOsaruWorkflow`
+   - ステータス: 実装済み、テスト未実施
+
+9. **WORKFLOW-10**: 長尺もえぞう
+   - 実装: `youtubeLongFormMoezoWorkflow`
+   - ステータス: 実装済み、テスト未実施
+
+10. **WORKFLOW-11**: 長尺掛け合い
+    - 実装: `youtubeLongFormConversationWorkflow`
+    - ステータス: 実装済み、テスト未実施
+
+11. **WORKFLOW-6**: コンテンツスコアリング＆フィードバック
+    - 実装: `youtubeContentScoringWorkflow`
+    - ステータス: 実装済み、テスト未実施
+
+12. **WORKFLOW-4**: YouTube Shorts企画生成
+    - 実装: `youtubeShortsIdeationWorkflow`
+    - ステータス: 実装済み、テスト未実施
+
+13. **WORKFLOW-5**: Shorts台本リサーチ＆生成
+    - 実装: `youtubeShortsScriptWorkflow`
+    - ステータス: 実装済み、テスト未実施
+
+また、以下の関連ワークフローも実装されています：
+
+1. キーワードリサーチワークフロー
+   - 実装: `youtubeKeywordResearchWorkflow`
+   - ステータス: 完全実装、テスト済み
+
+2. チャンネル分析ワークフロー
+   - 実装: `youtubeChannelAnalyticsWorkflow`
+   - ステータス: 完全実装、テスト済み
+
+3. 動画分析ワークフロー
+   - 実装: `youtubeVideoAnalyticsWorkflow`
+   - ステータス: 完全実装、テスト済み
 
 ## vNext構文への更新
 
-すべての既存ワークフローは、`steps`配列から`.then()`メソッドを使用する方式に更新され、`workflow.commit()`が追加されました。これにより、Mastraフレームワークの最新の構文に準拠しています。
+すべてのワークフローは、`steps`配列から`.then()`メソッドを使用する方式に更新され、`workflow.commit()`が追加されました。これにより、Mastraフレームワークの最新の構文に準拠しています。
 
 ## ワークフロー実行方法
 
@@ -64,7 +110,7 @@
 
 各ワークフローを`prompt.md`の仕様に合わせてブラッシュアップするための方針を以下に示します：
 
-### 1. WORKFLOW-13: プロジェクト初期インプット収集 (`inputCollectionWorkflow`)
+### 1. WORKFLOW-13: プロジェクト初期インプット収集 (`youtubeInputCollectionWorkflow`)
 
 **現状**: 基本的な入力収集機能は実装済み
 **改善点**:
@@ -175,190 +221,40 @@ const evaluateKeywords = createStep({
 
 ### 6. 長尺動画台本生成ワークフロー
 
-**現状**: 基本的な動画スクリプト生成機能は実装済み（`youtubeVideoScriptGeneratorWorkflow`）
+**現状**: すべての長尺動画台本生成ワークフローが実装済み
 **改善点**:
-- 各タイプ（TAIKI、ロードマップ、おさる、もえぞう、掛け合い）に対応するワークフローの実装
-- 各タイプの特性に合わせたプロンプトの実装
+- 各タイプ（TAIKI、ロードマップ、おさる、もえぞう、掛け合い）のテスト作成
+- 各タイプの特性に合わせたプロンプト最適化
 
-#### 6.1 WORKFLOW-7: 長尺TAIKI
+#### 6.1 WORKFLOW-7: 長尺TAIKI (`youtubeVideoScriptGeneratorWorkflow`)
+#### 6.2 WORKFLOW-8: 長尺ロードマップ (`youtubeLongFormRoadmapWorkflow`)
+#### 6.3 WORKFLOW-9: 長尺おさる (`youtubeLongFormOsaruWorkflow`)
+#### 6.4 WORKFLOW-10: 長尺もえぞう (`youtubeLongFormMoezoWorkflow`)
+#### 6.5 WORKFLOW-11: 長尺掛け合い (`youtubeLongFormConversationWorkflow`)
 
-```typescript
-// 長尺TAIKIワークフローの例
-const youtubeLongFormTaikiWorkflow = createWorkflow({
-  id: 'youtube-long-form-taiki-workflow',
-  description: '長尺TAIKI形式の動画台本を生成するワークフロー',
-  inputSchema: z.object({
-    videoTitle: z.string().describe('動画のタイトル'),
-    videoOutline: z.string().describe('動画の概要'),
-    targetAudience: z.string().describe('ターゲットオーディエンス'),
-    videoDuration: z.string().describe('動画の長さ'),
-    tone: z.string().describe('トーンと話し方'),
-    callToAction: z.string().describe('コールトゥアクション'),
-  }),
-  outputSchema: z.object({
-    success: z.boolean(),
-    message: z.string(),
-    result: z.object({
-      script: z.string(),
-      metadata: z.object({
-        estimatedDuration: z.string(),
-        targetKeywords: z.array(z.string()),
-        scriptStructure: z.array(z.object({
-          section: z.string(),
-          duration: z.string(),
-          purpose: z.string(),
-        })),
-      }),
-    }).optional(),
-  }),
-})
-  .then(validateScriptInputStep)
-  .then(researchContentStep)
-  .then(generateTaikiScriptStep);
+### 7. WORKFLOW-6: コンテンツスコアリング＆フィードバック (`youtubeContentScoringWorkflow`)
 
-// ワークフローをコミット
-youtubeLongFormTaikiWorkflow.commit();
-```
-
-### 7. WORKFLOW-6: コンテンツスコアリング＆フィードバック
-
-**現状**: 未実装
+**現状**: 実装済み、テスト未実施
 **改善点**:
-- 評価ステップ（Step-1〜Step-4）の実装
-- スコアリング項目一覧の実装
+- テストの作成
+- 評価ステップ（Step-1〜Step-4）の最適化
+- スコアリング項目一覧の最適化
 
-```typescript
-// コンテンツスコアリングワークフローの例
-const youtubeContentScoringWorkflow = createWorkflow({
-  id: 'youtube-content-scoring-workflow',
-  description: 'YouTubeコンテンツのスコアリングとフィードバックを行うワークフロー',
-  inputSchema: z.object({
-    videoUrl: z.string().describe('評価対象の動画URL'),
-    contentType: z.string().describe('コンテンツタイプ'),
-    targetAudience: z.string().describe('ターゲットオーディエンス'),
-    contentGoals: z.string().describe('コンテンツの目標'),
-  }),
-  outputSchema: z.object({
-    success: z.boolean(),
-    message: z.string(),
-    result: z.object({
-      overallScore: z.number(),
-      categoryScores: z.object({
-        engagement: z.number(),
-        retention: z.number(),
-        seo: z.number(),
-        production: z.number(),
-        storytelling: z.number(),
-      }),
-      feedback: z.string(),
-      improvementSuggestions: z.array(z.object({
-        category: z.string(),
-        suggestion: z.string(),
-        priority: z.string(),
-      })),
-    }).optional(),
-  }),
-})
-  .then(validateContentScoringInputStep)
-  .then(analyzeContentStep)
-  .then(generateScoringReportStep);
+### 8. WORKFLOW-4: YouTube Shorts企画生成 (`youtubeShortsIdeationWorkflow`)
 
-// ワークフローをコミット
-youtubeContentScoringWorkflow.commit();
-```
-
-### 8. WORKFLOW-4: YouTube Shorts企画生成
-
-**現状**: 未実装
+**現状**: 実装済み、テスト未実施
 **改善点**:
-- INTENT_UNDERSTANDING、EXECUTION_STRATEGY、OUTPUT_TAILORING、GPT_OPTIMIZATIONの各セクションを実装
-- 実行用プロンプト（Step-1〜Step-6）の実装
+- テストの作成
+- INTENT_UNDERSTANDING、EXECUTION_STRATEGY、OUTPUT_TAILORING、GPT_OPTIMIZATIONの各セクションの最適化
+- 実行用プロンプト（Step-1〜Step-6）の最適化
 
-```typescript
-// YouTube Shorts企画生成ワークフローの例
-const youtubeShortsIdeationWorkflow = createWorkflow({
-  id: 'youtube-shorts-ideation-workflow',
-  description: 'YouTube Shorts企画を生成するワークフロー',
-  inputSchema: z.object({
-    channelConcept: z.string().describe('チャンネルのコンセプト'),
-    targetAudience: z.string().describe('ターゲットオーディエンス'),
-    mainKeywords: z.array(z.string()).describe('メインキーワード'),
-    contentGoals: z.string().describe('コンテンツの目標'),
-    trendTopics: z.array(z.string()).optional().describe('トレンドトピック'),
-  }),
-  outputSchema: z.object({
-    success: z.boolean(),
-    message: z.string(),
-    result: z.object({
-      shortsIdeas: z.array(z.object({
-        title: z.string(),
-        concept: z.string(),
-        hook: z.string(),
-        structure: z.string(),
-        duration: z.string(),
-        visualElements: z.array(z.string()),
-        callToAction: z.string(),
-        keywords: z.array(z.string()),
-        trendRelevance: z.string(),
-      })),
-      recommendedSeries: z.array(z.object({
-        seriesName: z.string(),
-        videos: z.array(z.number()),
-        strategy: z.string(),
-      })),
-    }).optional(),
-  }),
-})
-  .then(validateShortsIdeationInputStep)
-  .then(researchTrendsStep)
-  .then(generateShortsIdeasStep)
-  .then(createSeriesRecommendationsStep);
+### 9. WORKFLOW-5: Shorts台本リサーチ＆生成 (`youtubeShortsScriptWorkflow`)
 
-// ワークフローをコミット
-youtubeShortsIdeationWorkflow.commit();
-```
-
-### 9. WORKFLOW-5: Shorts台本リサーチ＆生成
-
-**現状**: 未実装
+**現状**: 実装済み、テスト未実施
 **改善点**:
-- 検索キーワード/企画タイトル/目的の実装
-- 台本出力フォーマット（1〜4）の実装
-
-```typescript
-// Shorts台本生成ワークフローの例
-const youtubeShortsScriptWorkflow = createWorkflow({
-  id: 'youtube-shorts-script-workflow',
-  description: 'YouTube Shorts台本を生成するワークフロー',
-  inputSchema: z.object({
-    shortsTitle: z.string().describe('Shortsのタイトル'),
-    searchKeywords: z.array(z.string()).describe('検索キーワード'),
-    contentPurpose: z.string().describe('コンテンツの目的'),
-    targetAudience: z.string().describe('ターゲットオーディエンス'),
-    duration: z.string().describe('動画の長さ（秒）'),
-    visualStyle: z.string().optional().describe('ビジュアルスタイル'),
-  }),
-  outputSchema: z.object({
-    success: z.boolean(),
-    message: z.string(),
-    result: z.object({
-      script: z.string(),
-      metadata: z.object({
-        estimatedDuration: z.string(),
-        targetKeywords: z.array(z.string()),
-        visualNotes: z.string(),
-        audioNotes: z.string(),
-      }),
-    }).optional(),
-  }),
-})
-  .then(validateShortsScriptInputStep)
-  .then(researchShortsContentStep)
-  .then(generateShortsScriptStep);
-
-// ワークフローをコミット
-youtubeShortsScriptWorkflow.commit();
-```
+- テストの作成
+- 検索キーワード/企画タイトル/目的の最適化
+- 台本出力フォーマット（1〜4）の最適化
 
 ## ワークフロー間の連携
 
@@ -375,7 +271,7 @@ const youtubeContentCreationChain = createWorkflowChain({
   description: 'YouTubeコンテンツ作成の一連のプロセスを実行するワークフローチェーン',
   workflows: [
     {
-      workflow: inputCollectionWorkflow,
+      workflow: youtubeInputCollectionWorkflow,
       outputMapping: {
         businessName: 'businessName',
         presenterName: 'presenterName',
@@ -412,13 +308,22 @@ const youtubeContentCreationChain = createWorkflowChain({
 });
 ```
 
-## テスト方法
+## テスト戦略
 
 各ワークフローのテスト方法を以下に示します：
 
 1. **単体テスト**: 各ワークフローの個別テスト
+   - 入力バリデーションのテスト
+   - ステップ処理のモックテスト
+   - エラーハンドリングのテスト
+
 2. **統合テスト**: ワークフロー間の連携テスト
+   - ワークフローチェーンのテスト
+   - データ連携のテスト
+
 3. **エンドツーエンドテスト**: ユーザーシナリオに基づくテスト
+   - 一連のワークフロー実行テスト
+   - UIインタラクションテスト
 
 ```typescript
 // 単体テストの例
@@ -441,7 +346,7 @@ describe('youtubeChannelConceptWorkflow', () => {
 
 ## 今後の課題
 
-1. **未実装ワークフローの実装**: 残りのワークフローを実装する
+1. **テストカバレッジの拡充**: 未テストのワークフローのテストを実装する
 2. **ワークフロー間の連携強化**: ワークフロー間のデータ連携を強化する
 3. **UIの改善**: ユーザーインターフェースを改善し、ワークフローの使いやすさを向上させる
 4. **パフォーマンスの最適化**: ワークフローの実行パフォーマンスを最適化する
@@ -450,6 +355,6 @@ describe('youtubeChannelConceptWorkflow', () => {
 
 ## まとめ
 
-Mastra YouTubeワークフローは、`prompt.md`に記載されている仕様に基づいて実装されています。vNext構文への更新が完了し、ワークフローの基本構造は整っていますが、さらに仕様に合わせたブラッシュアップが必要です。
+Mastra YouTubeワークフローは、`prompt.md`に記載されている仕様に基づいて実装されています。すべてのワークフローはvNext構文に準拠して実装されていますが、一部のワークフローはテストが不足しており、ワークフロー間の連携やエラーハンドリングの改善の余地があります。
 
-このガイドに従って、各ワークフローを仕様に合わせて改善し、ワークフロー間の連携を強化することで、YouTubeコンテンツ作成の一連のプロセスをサポートする強力なツールセットを構築できます。
+このガイドに従って、各ワークフローのテストを実装し、ワークフロー間の連携を強化することで、YouTubeコンテンツ作成の一連のプロセスをサポートする強力なツールセットを構築できます。
