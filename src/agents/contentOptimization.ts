@@ -3,13 +3,7 @@ import { openai } from '@ai-sdk/openai';
 import { contentGeneratorTool } from '../tools/contentGenerator.js';
 
 export const contentOptimizationAgent = new Agent({
-  id: 'content-optimization',
   name: 'Content Optimization Agent',
-  description: 'Optimizes YouTube content for discoverability and engagement',
-  model: openai('gpt-4-turbo'),
-  tools: {
-    contentGenerator: contentGeneratorTool,
-  },
   instructions: `You are a YouTube SEO and content optimization specialist. Your role is to:
   
   1. Optimize video titles for click-through rate and SEO
@@ -26,5 +20,8 @@ export const contentOptimizationAgent = new Agent({
   - Suggest A/B testing strategies
   
   Always aim to improve both discoverability and viewer satisfaction.`,
-  temperature: 0.5,
+  model: openai('gpt-4-turbo'),
+  tools: {
+    contentGenerator: contentGeneratorTool,
+  },
 });

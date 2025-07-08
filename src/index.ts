@@ -1,5 +1,4 @@
-import { Mastra } from '@mastra/core/mastra';
-import { UpstashKVMemory } from '@mastra/memory';
+import { Mastra } from '@mastra/core';
 import { PinoLogger } from '@mastra/loggers';
 import { config } from 'dotenv';
 
@@ -28,12 +27,6 @@ export const mastra = new Mastra({
     videoIdeation: videoIdeationWorkflow,
     contentOptimization: contentOptimizationWorkflow,
   },
-  memory: process.env.UPSTASH_URL && process.env.UPSTASH_TOKEN
-    ? new UpstashKVMemory({
-        url: process.env.UPSTASH_URL,
-        token: process.env.UPSTASH_TOKEN,
-      })
-    : undefined,
   logger: new PinoLogger(),
 });
 

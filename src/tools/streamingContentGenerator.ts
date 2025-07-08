@@ -1,11 +1,11 @@
 import { createTool } from '@mastra/core/tools';
 import { z } from 'zod';
 import { openai } from '@ai-sdk/openai';
-import { generateText } from 'ai';
+import { streamText } from 'ai';
 
-export const contentGeneratorTool = createTool({
-  id: 'content-generator',
-  description: 'Generate YouTube content ideas, titles, descriptions, and scripts',
+export const streamingContentGeneratorTool = createTool({
+  id: 'streaming-content-generator',
+  description: 'Generate YouTube content with real-time streaming responses',
   inputSchema: z.object({
     type: z.enum(['idea', 'title', 'description', 'script', 'tags']),
     topic: z.string(),
@@ -17,10 +17,12 @@ export const contentGeneratorTool = createTool({
   outputSchema: z.object({
     success: z.boolean(),
     content: z.string(),
+    stream: z.any().optional(),
     metadata: z.record(z.any()).optional(),
   }),
   execute: async ({ context }) => {
     const { type, topic, style, targetAudience, keywords, length } = context;
+    
     try {
       let prompt = '';
       
@@ -81,18 +83,27 @@ export const contentGeneratorTool = createTool({
           break;
       }
 
-      const { text } = await generateText({
+      // Create streaming response
+      const streamResult = await streamText({
         model: openai('gpt-4-turbo'),
         prompt,
         temperature: 0.7,
       });
 
+      // Collect full text for compatibility
+      let fullContent = '';
+      for await (const chunk of streamResult.textStream) {
+        fullContent += chunk;
+      }
+
       return {
         success: true,
-        content: text,
+        content: fullContent,
+        stream: streamResult.textStream,
         metadata: {
           type,
           topic,
+          streamingEnabled: true,
           generatedAt: new Date().toISOString(),
         },
       };
@@ -107,3 +118,86 @@ export const contentGeneratorTool = createTool({
     }
   },
 });
+
+// Streaming helper function for real-time content generation
+export async function* generateStreamingContent(
+  type: 'idea' | 'title' | 'description' | 'script' | 'tags',
+  topic: string,
+  options?: {
+    style?: string;
+    targetAudience?: string;
+    keywords?: string[];
+    length?: 'short' | 'medium' | 'long';
+  }
+): AsyncGenerator<string, void, unknown> {
+  try {
+    const result = await streamingContentGeneratorTool.execute({
+      context: {
+        type,
+        topic,
+        ...options,
+      }
+    });
+
+    if (result.success && result.stream) {
+      for await (const chunk of result.stream) {
+        yield chunk;
+      }
+    }
+  } catch (error) {
+    yield `Error: ${error instanceof Error ? error.message : 'Unknown error'}`;
+  }
+}
+
+// Real-time YouTube content generator with progress updates
+export class StreamingYouTubeContentGenerator {
+  private onProgress?: (progress: { step: string; percentage: number; content?: string }) => void;
+
+  constructor(onProgress?: (progress: { step: string; percentage: number; content?: string }) => void) {
+    this.onProgress = onProgress;
+  }
+
+  async *generateCompleteVideoContent(topic: string, options?: {
+    targetAudience?: string;
+    style?: string;
+    keywords?: string[];
+  }): AsyncGenerator<{
+    step: 'title' | 'description' | 'script' | 'tags';
+    content: string;
+    completed: boolean;
+  }, void, unknown> {
+    const steps = ['title', 'description', 'script', 'tags'] as const;
+    const results: Record<string, string> = {};
+
+    for (let i = 0; i < steps.length; i++) {
+      const step = steps[i];
+      const percentage = Math.round(((i + 1) / steps.length) * 100);
+      
+      this.onProgress?.({
+        step: `Generating ${step}...`,
+        percentage,
+      });
+
+      let content = '';
+      for await (const chunk of generateStreamingContent(step, topic, options)) {
+        content += chunk;
+        
+        // Yield partial content for real-time updates
+        yield {
+          step,
+          content,
+          completed: false,
+        };
+      }
+
+      results[step] = content;
+      
+      // Yield completed step
+      yield {
+        step,
+        content,
+        completed: true,
+      };
+    }
+  }
+}

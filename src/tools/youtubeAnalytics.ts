@@ -4,7 +4,6 @@ import { YouTubeService } from '../lib/youtube.js';
 
 export const youtubeAnalyticsTool = createTool({
   id: 'youtube-analytics',
-  name: 'YouTube Analytics Tool',
   description: 'Analyze YouTube channels and videos',
   inputSchema: z.object({
     action: z.enum(['channel', 'video', 'search', 'trending']),
@@ -18,7 +17,8 @@ export const youtubeAnalyticsTool = createTool({
     data: z.any(),
     error: z.string().optional(),
   }),
-  execute: async ({ action, channelId, videoId, query, regionCode }) => {
+  execute: async ({ context }) => {
+    const { action, channelId, videoId, query, regionCode } = context;
     const apiKey = process.env.YOUTUBE_API_KEY;
     if (!apiKey) {
       return {

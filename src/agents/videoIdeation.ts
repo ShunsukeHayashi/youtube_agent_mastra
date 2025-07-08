@@ -4,14 +4,7 @@ import { contentGeneratorTool } from '../tools/contentGenerator.js';
 import { youtubeAnalyticsTool } from '../tools/youtubeAnalytics.js';
 
 export const videoIdeationAgent = new Agent({
-  id: 'video-ideation',
   name: 'Video Ideation Agent',
-  description: 'Generates creative video ideas based on trends and channel analysis',
-  model: openai('gpt-4-turbo'),
-  tools: {
-    contentGenerator: contentGeneratorTool,
-    youtubeAnalytics: youtubeAnalyticsTool,
-  },
   instructions: `You are a creative YouTube content strategist specializing in video ideation. Your role is to:
   
   1. Generate unique and engaging video ideas
@@ -28,5 +21,9 @@ export const videoIdeationAgent = new Agent({
   - Suggest content series for sustained engagement
   
   Always prioritize quality, originality, and audience value in your suggestions.`,
-  temperature: 0.8,
+  model: openai('gpt-4-turbo'),
+  tools: {
+    contentGenerator: contentGeneratorTool,
+    youtubeAnalytics: youtubeAnalyticsTool,
+  },
 });

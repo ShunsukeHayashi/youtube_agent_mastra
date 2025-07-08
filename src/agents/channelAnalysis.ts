@@ -3,13 +3,7 @@ import { openai } from '@ai-sdk/openai';
 import { youtubeAnalyticsTool } from '../tools/youtubeAnalytics.js';
 
 export const channelAnalysisAgent = new Agent({
-  id: 'channel-analysis',
   name: 'Channel Analysis Agent',
-  description: 'Analyzes YouTube channels for performance insights and recommendations',
-  model: openai('gpt-4-turbo'),
-  tools: {
-    youtubeAnalytics: youtubeAnalyticsTool,
-  },
   instructions: `You are a YouTube channel analysis expert. Your role is to:
   
   1. Analyze channel performance metrics (views, subscribers, engagement)
@@ -26,5 +20,8 @@ export const channelAnalysisAgent = new Agent({
   - Provide specific, actionable recommendations
   
   Always base your analysis on data and provide clear reasoning for your recommendations.`,
-  temperature: 0.3,
+  model: openai('gpt-4-turbo'),
+  tools: {
+    youtubeAnalytics: youtubeAnalyticsTool,
+  },
 });
