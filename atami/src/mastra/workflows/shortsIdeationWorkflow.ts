@@ -210,7 +210,9 @@ const analyzeTrendsStep = createStep({
 });
 
 // Shorts企画生成ステップ
-description: 'Generate creative Shorts content ideas based on trends and channel concept',
+const generateShortsIdeasStep = createStep({
+    id: 'generate-shorts-ideas',
+    description: 'Generate creative Shorts content ideas based on trends and channel concept',
     inputSchema: z.object({
         validatedInput: z.object({
             channelConcept: z.string(),
