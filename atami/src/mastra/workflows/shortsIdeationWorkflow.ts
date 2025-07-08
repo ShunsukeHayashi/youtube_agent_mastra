@@ -395,7 +395,10 @@ const generateShortsIdeasStep = createStep({
             },
 });
 
-description: 'Create series recommendations based on generated ideas',
+// シリーズ推奨生成ステップ
+const generateSeriesRecommendationsStep = createStep({
+    id: 'generate-series-recommendations',
+    description: 'Create series recommendations based on generated ideas',
     inputSchema: z.object({
         validatedInput: z.object({
             channelConcept: z.string(),
