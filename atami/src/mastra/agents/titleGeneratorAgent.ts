@@ -1,4 +1,4 @@
-import { anthropic } from '@ai-sdk/anthropic';
+import { openai } from '@ai-sdk/openai';
 import { Agent } from '@mastra/core/agent';
 import { Memory } from '@mastra/memory';
 import { LibSQLStore } from '@mastra/libsql';
@@ -33,7 +33,7 @@ export const youtubeTitleGeneratorAgent = new Agent({
       
       Present your final recommendations in a well-organized format showing the best thumbnail-title combinations.
   `,
-  model: anthropic('claude-3-7-sonnet-20250219'),
+  model: openai('gpt-4'),
   tools: { youtubeTitleGeneratorTool },
   memory: new Memory({
     storage: new LibSQLStore({

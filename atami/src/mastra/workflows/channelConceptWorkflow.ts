@@ -1,12 +1,12 @@
 // @ts-nocheck - TypeScriptの型チェックを無効化
-import { anthropic } from '@ai-sdk/anthropic';
+import { openai } from '@ai-sdk/openai';
 import { createStep } from '@mastra/core';
 import { createWorkflow } from '@mastra/core/workflows';
 import { z } from 'zod';
 import { channelConceptAgent } from '../agents/channelConceptAgent';
 import { youtubeChannelConceptTool } from '../tools/channelConcept';
 
-const llm = anthropic('claude-3-7-sonnet-20250219');
+const llm = openai('gpt-4');
 
 // チャンネルコンセプト生成ステップ
 const generateChannelConcepts = createStep({

@@ -1,4 +1,4 @@
-import { anthropic } from '@ai-sdk/anthropic';
+import { openai } from '@ai-sdk/openai';
 import { Agent } from '@mastra/core/agent';
 import { Memory } from '@mastra/memory';
 import { LibSQLStore } from '@mastra/libsql';
@@ -42,7 +42,7 @@ export const inputCollectionAgent = new Agent({
   
   youtubeInputCollectionToolを使用して、ユーザーから収集した情報を処理し、適切なワークフローを推奨してください。
   `,
-  model: anthropic('claude-3-7-sonnet-20250219'),
+  model: openai('gpt-4'),
   tools: { youtubeInputCollectionTool },
   memory: new Memory({
     storage: new LibSQLStore({

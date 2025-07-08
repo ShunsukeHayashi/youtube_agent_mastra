@@ -1,5 +1,5 @@
 // APIキーは.envファイルで管理します
-import { anthropic } from '@ai-sdk/anthropic';
+import { openai } from '@ai-sdk/openai';
 import { Agent } from '@mastra/core/agent';
 import { Memory } from '@mastra/memory';
 import { LibSQLStore } from '@mastra/libsql';
@@ -64,7 +64,7 @@ export const keywordResearchAgent = new Agent({
   
   注意: APIキーが設定されていない場合は、モックデータが使用されます。その場合は、データが実際の検索ボリュームを反映していない可能性があることを明記してください。
   `,
-  model: anthropic('claude-3-7-sonnet-20250219'),
+  model: openai('gpt-4'),
   tools: { keywordResearchTool },
   memory: new Memory({
     storage: new LibSQLStore({

@@ -1,4 +1,4 @@
-import { anthropic } from '@ai-sdk/anthropic';
+import { openai } from '@ai-sdk/openai';
 import { Agent } from '@mastra/core/agent';
 import { Memory } from '@mastra/memory';
 import { LibSQLStore } from '@mastra/libsql';
@@ -84,7 +84,7 @@ export const youtubeThumbnailTitleGeneratorAgent = new Agent({
 
   youtubeThumbnailTitleGeneratorToolを使用して、提供された情報を分析し、データに基づいた戦略的なサムネイルとタイトルの提案を生成してください。
   `,
-  model: anthropic('claude-3-7-sonnet-20250219'),
+  model: openai('gpt-4'),
   tools: { youtubeThumbnailTitleGeneratorTool },
   memory: new Memory({
     storage: new LibSQLStore({

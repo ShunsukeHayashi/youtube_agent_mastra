@@ -1,12 +1,12 @@
 // @ts-nocheck - TypeScriptの型チェックを無効化
-import { anthropic } from '@ai-sdk/anthropic';
+import { openai } from '@ai-sdk/openai';
 import { createStep } from '@mastra/core';
 import { createWorkflow } from '@mastra/core/workflows';
 import { z } from 'zod';
 import { keywordResearchAgent } from '../agents/keywordResearchAgent';
 import { keywordResearchTool } from '../tools/keywordResearch';
 
-const llm = anthropic('claude-3-7-sonnet-20250219');
+const llm = openai('gpt-4');
 
 // キーワードリサーチステップ
 const researchKeywords = createStep({
