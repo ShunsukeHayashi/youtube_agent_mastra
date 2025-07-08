@@ -3,7 +3,7 @@ import { Agent } from '@mastra/core/agent';
 import { createStep } from '@mastra/core';
 import { createWorkflow } from '@mastra/core/workflows';
 import { z } from 'zod';
-import { youtubeVideoScriptGeneratorTool } from '../tools/videoScriptGenerator';
+// import { youtubeVideoScriptGeneratorTool } from '../tools/videoScriptGenerator'; // File does not exist
 import { youtubeVideoPlanningTool } from '../tools/videoPlanningSeo';
 
 const llm = anthropic('claude-3-7-sonnet-20250219');
@@ -11,7 +11,7 @@ const llm = anthropic('claude-3-7-sonnet-20250219');
 const videoScriptGeneratorAgent = new Agent({
     name: 'YouTube Script Generator',
     model: llm,
-    tools: { youtubeVideoScriptGeneratorTool, youtubeVideoPlanningTool },
+    tools: { youtubeVideoPlanningTool },
     instructions: `
     あなたはYouTube動画スクリプト作成の専門家です。
     
