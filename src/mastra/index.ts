@@ -7,8 +7,7 @@ import { channelAnalysisAgent } from '../agents/channelAnalysis.js';
 import { videoIdeationAgent } from '../agents/videoIdeation.js';
 import { contentOptimizationAgent } from '../agents/contentOptimization.js';
 
-// Import workflow functions
-import * as workflows from '../workflows/simpleWorkflows.js';
+// Note: workflow functions are exported separately to avoid circular imports
 
 // Load environment variables
 config();
@@ -17,14 +16,14 @@ config();
 export * from '../agents/channelAnalysis.js';
 export * from '../agents/videoIdeation.js';
 export * from '../agents/contentOptimization.js';
-export * from '../workflows/simpleWorkflows.js';
+// Note: simpleWorkflows exported separately
 export * from '../tools/youtubeAnalytics.js';
 export * from '../tools/contentGenerator.js';
 
-// Export streaming components
-export * from '../agents/streamingChannelAnalysis.js';
-export * from '../tools/streamingContentGenerator.js';
-export * from '../streaming/streamingWorkflows.js';
+// Export streaming components (temporarily disabled)
+// export * from '../agents/streamingChannelAnalysis.js';
+// export * from '../tools/streamingContentGenerator.js';
+// export * from '../streaming/streamingWorkflows.js';
 
 // Export Mastra instance
 export const mastra = new Mastra({
@@ -36,7 +35,6 @@ export const mastra = new Mastra({
   logger: new PinoLogger(),
 });
 
-// Export workflow functions
-export { workflows };
+// Note: workflows exported from simpleWorkflows.js directly
 
 export default mastra;

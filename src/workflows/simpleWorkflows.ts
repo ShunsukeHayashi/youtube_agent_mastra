@@ -1,5 +1,20 @@
 // 簡単なワークフロー実装（Mastra v0.10対応）
-import { mastra } from '../mastra/index.js';
+// Note: mastra instance created locally to avoid circular dependency
+import { Mastra } from '@mastra/core';
+import { PinoLogger } from '@mastra/loggers';
+import { channelAnalysisAgent } from '../agents/channelAnalysis.js';
+import { videoIdeationAgent } from '../agents/videoIdeation.js';
+import { contentOptimizationAgent } from '../agents/contentOptimization.js';
+
+// Local mastra instance for workflows
+const mastra = new Mastra({
+  agents: {
+    channelAnalysis: channelAnalysisAgent,
+    videoIdeation: videoIdeationAgent,
+    contentOptimization: contentOptimizationAgent,
+  },
+  logger: new PinoLogger(),
+});
 
 export interface ChannelAnalysisInput {
   channelId: string;
