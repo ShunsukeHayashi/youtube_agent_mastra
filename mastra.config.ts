@@ -20,7 +20,7 @@ export default defineConfig({
   // Build configuration for Mastra Cloud
   build: {
     outDir: 'dist',
-    entry: 'src/mastra/index.ts',
+    entry: 'atami/src/mastra/index.ts',
     target: 'node',
     format: 'esm'
   },

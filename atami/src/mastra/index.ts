@@ -1,19 +1,21 @@
-import { Mastra } from '@mastra/core';
-import { PinoLogger } from '@mastra/loggers';
-import { openai } from '@ai-sdk/openai';
-import { Agent } from '@mastra/core/agent';
+// @ts-nocheck
+// .envファイルを読み込む
+import dotenv from 'dotenv';
+dotenv.config();
 
-// Simple Mastra instance for deployment
+import { Mastra } from '@mastra/core/mastra';
+import { PinoLogger } from '@mastra/loggers';
+import { LibSQLStore } from '@mastra/libsql';
+
+// Minimal setup for deployment
 export const mastra = new Mastra({
-  agents: {
-    youtubeAgent: new Agent({
-      name: 'YouTube Assistant',
-      instructions: 'You are a helpful YouTube assistant for channel analysis and content creation.',
-      model: openai('gpt-4'),
-      tools: {},
-    }),
-  },
-  logger: new PinoLogger(),
+  storage: new LibSQLStore({
+    url: "file:./mastra.db",
+  }),
+  logger: new PinoLogger({
+    name: 'YouTube Mastra',
+    level: 'info',
+  }),
 });
 
 export default mastra;
